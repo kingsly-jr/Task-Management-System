@@ -1,0 +1,22 @@
+# Environment variables & secrets (CRITICAL)
+.env
+.env.local
+.env.*.local
+*.env
+!.env.example
+
+# Build outputs
+**/target/
+**/dist/
+**/node_modules/
+
+# Uploaded assets / media
+uploads/
+
+# IDE & Editor settings
+.idea/
+.vscode/
+*.iml
+.project
+.classpath
+.settings/
