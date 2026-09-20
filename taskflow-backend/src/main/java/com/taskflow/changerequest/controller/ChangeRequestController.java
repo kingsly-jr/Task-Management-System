@@ -12,7 +12,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -29,7 +28,7 @@ public class ChangeRequestController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'CLIENT')")
     @Operation(summary = "Submit a new change request for a project")
     public ResponseEntity<ApiResponse<ChangeRequestDto.ChangeRequestResponse>> createChangeRequest(
-            @PathVariable UUID projectId,
+            @PathVariable Long projectId,
             @Valid @RequestBody ChangeRequestDto.CreateChangeRequest request) {
         ChangeRequestDto.ChangeRequestResponse response = changeRequestService.createChangeRequest(projectId, request);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -40,7 +39,7 @@ public class ChangeRequestController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'CLIENT')")
     @Operation(summary = "Get all change requests for a project with optional status filter and search")
     public ResponseEntity<ApiResponse<List<ChangeRequestDto.ChangeRequestResponse>>> getChangeRequestsForProject(
-            @PathVariable UUID projectId,
+            @PathVariable Long projectId,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String search) {
         List<ChangeRequestDto.ChangeRequestResponse> list = changeRequestService.getChangeRequestsForProject(projectId, status, search);
@@ -51,7 +50,7 @@ public class ChangeRequestController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'CLIENT')")
     @Operation(summary = "Get aggregated change request metrics, cost impact, and schedule impact")
     public ResponseEntity<ApiResponse<ChangeRequestDto.ChangeRequestStatsResponse>> getStats(
-            @PathVariable UUID projectId) {
+            @PathVariable Long projectId) {
         ChangeRequestDto.ChangeRequestStatsResponse stats = changeRequestService.getStats(projectId);
         return ResponseEntity.ok(ApiResponse.ok(stats));
     }
@@ -60,7 +59,7 @@ public class ChangeRequestController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'CLIENT')")
     @Operation(summary = "Get detailed change request information including negotiation thread")
     public ResponseEntity<ApiResponse<ChangeRequestDto.ChangeRequestDetailResponse>> getChangeRequestById(
-            @PathVariable UUID id) {
+            @PathVariable Long id) {
         ChangeRequestDto.ChangeRequestDetailResponse response = changeRequestService.getChangeRequestById(id);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
@@ -69,7 +68,7 @@ public class ChangeRequestController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
     @Operation(summary = "Review change request: Approve or Reject with notes (PM or Admin)")
     public ResponseEntity<ApiResponse<ChangeRequestDto.ChangeRequestResponse>> reviewChangeRequest(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @Valid @RequestBody ChangeRequestDto.ReviewChangeRequest request) {
         ChangeRequestDto.ChangeRequestResponse response = changeRequestService.reviewChangeRequest(id, request);
         String msg = request.isApproved() ? "Change request APPROVED" : "Change request REJECTED";
@@ -80,7 +79,7 @@ public class ChangeRequestController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
     @Operation(summary = "Update change request status (e.g. UNDER_REVIEW, IMPLEMENTED)")
     public ResponseEntity<ApiResponse<ChangeRequestDto.ChangeRequestResponse>> updateStatus(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @Valid @RequestBody ChangeRequestDto.UpdateStatusRequest request) {
         ChangeRequestDto.ChangeRequestResponse response = changeRequestService.updateStatus(id, request);
         return ResponseEntity.ok(ApiResponse.ok("Change request status updated", response));
@@ -90,7 +89,7 @@ public class ChangeRequestController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'CLIENT', 'TEAM_MEMBER')")
     @Operation(summary = "Post a comment to the change request discussion thread")
     public ResponseEntity<ApiResponse<ChangeRequestDto.CommentResponse>> addComment(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @Valid @RequestBody ChangeRequestDto.CreateCommentRequest request) {
         ChangeRequestDto.CommentResponse response = changeRequestService.addComment(id, request);
         return ResponseEntity.status(HttpStatus.CREATED)

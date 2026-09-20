@@ -7,11 +7,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.UUID;
+
 
 public class UserPrincipal implements UserDetails {
 
-    private final UUID id;
+    private final Long id;
     private final String email;
     private final String password;
     private final String firstName;
@@ -33,7 +33,7 @@ public class UserPrincipal implements UserDetails {
         this.authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + this.roleCode));
     }
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 

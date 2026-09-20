@@ -4,12 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class NotificationDto {
 
     public static class NotificationResponse {
-        private UUID notificationId;
+        private Long notificationId;
         private String title;
         private String message;
         private String type;
@@ -19,14 +18,14 @@ public class NotificationDto {
         private boolean isRead;
 
         private Instant createdAt;
-        private UUID senderId;
+        private Long senderId;
         private String senderName;
 
         public NotificationResponse() {}
 
-        public NotificationResponse(UUID notificationId, String title, String message, String type,
+        public NotificationResponse(Long notificationId, String title, String message, String type,
                                     String targetUrl, boolean isRead, Instant createdAt,
-                                    UUID senderId, String senderName) {
+                                    Long senderId, String senderName) {
             this.notificationId = notificationId;
             this.title = title;
             this.message = message;
@@ -38,8 +37,8 @@ public class NotificationDto {
             this.senderName = senderName;
         }
 
-        public UUID getNotificationId() { return notificationId; }
-        public void setNotificationId(UUID notificationId) { this.notificationId = notificationId; }
+        public Long getNotificationId() { return notificationId; }
+        public void setNotificationId(Long notificationId) { this.notificationId = notificationId; }
         public String getTitle() { return title; }
         public void setTitle(String title) { this.title = title; }
         public String getMessage() { return message; }
@@ -58,8 +57,8 @@ public class NotificationDto {
         public void setIsRead(boolean read) { isRead = read; }
         public Instant getCreatedAt() { return createdAt; }
         public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
-        public UUID getSenderId() { return senderId; }
-        public void setSenderId(UUID senderId) { this.senderId = senderId; }
+        public Long getSenderId() { return senderId; }
+        public void setSenderId(Long senderId) { this.senderId = senderId; }
         public String getSenderName() { return senderName; }
         public void setSenderName(String senderName) { this.senderName = senderName; }
     }

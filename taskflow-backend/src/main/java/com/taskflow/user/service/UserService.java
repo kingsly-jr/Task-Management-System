@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -164,7 +163,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserDto.UserResponse getUserById(UUID id) {
+    public UserDto.UserResponse getUserById(Long id) {
         User user = userRepository.findById(id)
                 .filter(u -> !u.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
@@ -172,7 +171,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserDto.UserResponse updateUser(UUID id, UserDto.UpdateUserRequest request) {
+    public UserDto.UserResponse updateUser(Long id, UserDto.UpdateUserRequest request) {
         User user = userRepository.findById(id)
                 .filter(u -> !u.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
@@ -196,7 +195,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserDto.UserResponse toggleUserStatus(UUID id) {
+    public UserDto.UserResponse toggleUserStatus(Long id) {
         User user = userRepository.findById(id)
                 .filter(u -> !u.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
@@ -214,7 +213,7 @@ public class UserService {
     }
 
     @Transactional
-    public String resetUserPassword(UUID id, UserDto.ResetPasswordAdminRequest request) {
+    public String resetUserPassword(Long id, UserDto.ResetPasswordAdminRequest request) {
         User user = userRepository.findById(id)
                 .filter(u -> !u.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
@@ -231,7 +230,7 @@ public class UserService {
     }
 
     @Transactional
-    public void softDeleteUser(UUID id) {
+    public void softDeleteUser(Long id) {
         User user = userRepository.findById(id)
                 .filter(u -> !u.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));

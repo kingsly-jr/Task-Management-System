@@ -9,20 +9,20 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+
 
 @Repository
-public interface ProjectRepository extends JpaRepository<Project, UUID>, JpaSpecificationExecutor<Project> {
+public interface ProjectRepository extends JpaRepository<Project, Long>, JpaSpecificationExecutor<Project> {
     Optional<Project> findByProjectCodeIgnoreCaseAndIsDeletedFalse(String projectCode);
     boolean existsByProjectCodeIgnoreCaseAndIsDeletedFalse(String projectCode);
     List<Project> findByIsDeletedFalse();
-    List<Project> findByProjectManager_UserIdAndIsDeletedFalse(UUID projectManagerId);
-    Page<Project> findByProjectManager_UserIdAndIsDeletedFalse(UUID projectManagerId, Pageable pageable);
-    List<Project> findByClient_ClientIdAndIsDeletedFalse(UUID clientId);
-    List<Project> findByClient_User_UserIdAndIsDeletedFalse(UUID userId);
-    Page<Project> findByClient_User_UserIdAndIsDeletedFalse(UUID userId, Pageable pageable);
+    List<Project> findByProjectManager_UserIdAndIsDeletedFalse(Long projectManagerId);
+    Page<Project> findByProjectManager_UserIdAndIsDeletedFalse(Long projectManagerId, Pageable pageable);
+    List<Project> findByClient_ClientIdAndIsDeletedFalse(Long clientId);
+    List<Project> findByClient_User_UserIdAndIsDeletedFalse(Long userId);
+    Page<Project> findByClient_User_UserIdAndIsDeletedFalse(Long userId, Pageable pageable);
     long countByIsDeletedFalse();
     long countByStatusAndIsDeletedFalse(String status);
-    long countByProjectManager_UserIdAndIsDeletedFalse(UUID projectManagerId);
-    long countByProjectManager_UserIdAndStatusAndIsDeletedFalse(UUID projectManagerId, String status);
+    long countByProjectManager_UserIdAndIsDeletedFalse(Long projectManagerId);
+    long countByProjectManager_UserIdAndStatusAndIsDeletedFalse(Long projectManagerId, String status);
 }

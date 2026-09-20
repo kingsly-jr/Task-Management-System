@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -61,7 +60,7 @@ public class NotificationService {
     }
 
     @Transactional
-    public NotificationDto.NotificationResponse markAsRead(UUID notificationId) {
+    public NotificationDto.NotificationResponse markAsRead(Long notificationId) {
         UserPrincipal currentUser = getCurrentUserPrincipal();
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Notification not found with id: " + notificationId));

@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -32,7 +31,7 @@ public class DocumentController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER')")
     @Operation(summary = "Upload new document with metadata for a project")
     public ResponseEntity<ApiResponse<DocumentDto.DocumentResponse>> uploadDocument(
-            @PathVariable UUID projectId,
+            @PathVariable Long projectId,
             @RequestParam("file") MultipartFile file,
             @RequestParam("title") String title,
             @RequestParam(value = "category", required = false, defaultValue = "OTHER") String category,
@@ -50,7 +49,7 @@ public class DocumentController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER')")
     @Operation(summary = "Upload new version of an existing document")
     public ResponseEntity<ApiResponse<DocumentDto.DocumentResponse>> uploadNewVersion(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "changeLog", required = false) String changeLog) {
 
@@ -62,7 +61,7 @@ public class DocumentController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'CLIENT')")
     @Operation(summary = "Get all documents for a project with optional category and search filters")
     public ResponseEntity<ApiResponse<List<DocumentDto.DocumentResponse>>> getDocumentsForProject(
-            @PathVariable UUID projectId,
+            @PathVariable Long projectId,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String search) {
 
@@ -74,7 +73,7 @@ public class DocumentController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'CLIENT')")
     @Operation(summary = "Get storage usage and category distribution statistics")
     public ResponseEntity<ApiResponse<DocumentDto.DocumentStatsResponse>> getDocumentStats(
-            @PathVariable UUID projectId) {
+            @PathVariable Long projectId) {
 
         DocumentDto.DocumentStatsResponse stats = documentService.getDocumentStats(projectId);
         return ResponseEntity.ok(ApiResponse.ok(stats));
@@ -84,7 +83,7 @@ public class DocumentController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'CLIENT')")
     @Operation(summary = "Get document metadata including full version history")
     public ResponseEntity<ApiResponse<DocumentDto.DocumentDetailResponse>> getDocumentById(
-            @PathVariable UUID id) {
+            @PathVariable Long id) {
 
         DocumentDto.DocumentDetailResponse response = documentService.getDocumentById(id);
         return ResponseEntity.ok(ApiResponse.ok(response));
@@ -93,7 +92,7 @@ public class DocumentController {
     @GetMapping("/documents/{id}/download")
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'CLIENT')")
     @Operation(summary = "Stream binary download of document file")
-    public ResponseEntity<Resource> downloadDocument(@PathVariable UUID id) {
+    public ResponseEntity<Resource> downloadDocument(@PathVariable Long id) {
         DocumentService.DocumentDownload download = documentService.loadDocumentFile(id);
 
         MediaType mediaType;
@@ -112,7 +111,7 @@ public class DocumentController {
     @DeleteMapping("/documents/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
     @Operation(summary = "Soft delete document (Project Manager or Admin only)")
-    public ResponseEntity<ApiResponse<Void>> deleteDocument(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<Void>> deleteDocument(@PathVariable Long id) {
         documentService.deleteDocument(id);
         return ResponseEntity.ok(ApiResponse.ok("Document deleted successfully", null));
     }

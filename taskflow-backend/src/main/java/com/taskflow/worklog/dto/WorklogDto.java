@@ -11,15 +11,14 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class WorklogDto {
 
     public static class CreateWorklogRequest {
         @NotNull(message = "Project ID is required")
-        private UUID projectId;
+        private Long projectId;
 
-        private UUID taskId;
+        private Long taskId;
 
         private LocalDate logDate = LocalDate.now();
 
@@ -36,11 +35,11 @@ public class WorklogDto {
 
         public CreateWorklogRequest() {}
 
-        public UUID getProjectId() { return projectId; }
-        public void setProjectId(UUID projectId) { this.projectId = projectId; }
+        public Long getProjectId() { return projectId; }
+        public void setProjectId(Long projectId) { this.projectId = projectId; }
 
-        public UUID getTaskId() { return taskId; }
-        public void setTaskId(UUID taskId) { this.taskId = taskId; }
+        public Long getTaskId() { return taskId; }
+        public void setTaskId(Long taskId) { this.taskId = taskId; }
 
         public LocalDate getLogDate() { return logDate; }
         public void setLogDate(LocalDate logDate) { this.logDate = logDate; }
@@ -62,7 +61,7 @@ public class WorklogDto {
     }
 
     public static class UpdateWorklogRequest {
-        private UUID taskId;
+        private Long taskId;
         private LocalDate logDate;
         private BigDecimal hoursSpent;
         private String description;
@@ -73,8 +72,8 @@ public class WorklogDto {
 
         public UpdateWorklogRequest() {}
 
-        public UUID getTaskId() { return taskId; }
-        public void setTaskId(UUID taskId) { this.taskId = taskId; }
+        public Long getTaskId() { return taskId; }
+        public void setTaskId(Long taskId) { this.taskId = taskId; }
 
         public LocalDate getLogDate() { return logDate; }
         public void setLogDate(LocalDate logDate) { this.logDate = logDate; }
@@ -114,14 +113,14 @@ public class WorklogDto {
     }
 
     public static class WorklogResponse {
-        private UUID worklogId;
-        private UUID projectId;
+        private Long worklogId;
+        private Long projectId;
         private String projectCode;
         private String projectName;
-        private UUID taskId;
+        private Long taskId;
         private String taskCode;
         private String taskTitle;
-        private UUID userId;
+        private Long userId;
         private String userName;
         private String userRoleCategory;
         private LocalDate logDate;
@@ -132,7 +131,7 @@ public class WorklogDto {
         private boolean isBillable;
 
         private String status;
-        private UUID reviewedById;
+        private Long reviewedById;
         private String reviewedByName;
         private Instant reviewedAt;
         private String reviewNotes;
@@ -140,11 +139,11 @@ public class WorklogDto {
 
         public WorklogResponse() {}
 
-        public WorklogResponse(UUID worklogId, UUID projectId, String projectCode, String projectName,
-                               UUID taskId, String taskCode, String taskTitle, UUID userId,
+        public WorklogResponse(Long worklogId, Long projectId, String projectCode, String projectName,
+                               Long taskId, String taskCode, String taskTitle, Long userId,
                                String userName, String userRoleCategory, LocalDate logDate,
                                BigDecimal hoursSpent, String description, boolean isBillable,
-                               String status, UUID reviewedById, String reviewedByName,
+                               String status, Long reviewedById, String reviewedByName,
                                Instant reviewedAt, String reviewNotes, Instant createdAt) {
             this.worklogId = worklogId;
             this.projectId = projectId;
@@ -168,22 +167,22 @@ public class WorklogDto {
             this.createdAt = createdAt;
         }
 
-        public UUID getWorklogId() { return worklogId; }
-        public void setWorklogId(UUID worklogId) { this.worklogId = worklogId; }
-        public UUID getProjectId() { return projectId; }
-        public void setProjectId(UUID projectId) { this.projectId = projectId; }
+        public Long getWorklogId() { return worklogId; }
+        public void setWorklogId(Long worklogId) { this.worklogId = worklogId; }
+        public Long getProjectId() { return projectId; }
+        public void setProjectId(Long projectId) { this.projectId = projectId; }
         public String getProjectCode() { return projectCode; }
         public void setProjectCode(String projectCode) { this.projectCode = projectCode; }
         public String getProjectName() { return projectName; }
         public void setProjectName(String projectName) { this.projectName = projectName; }
-        public UUID getTaskId() { return taskId; }
-        public void setTaskId(UUID taskId) { this.taskId = taskId; }
+        public Long getTaskId() { return taskId; }
+        public void setTaskId(Long taskId) { this.taskId = taskId; }
         public String getTaskCode() { return taskCode; }
         public void setTaskCode(String taskCode) { this.taskCode = taskCode; }
         public String getTaskTitle() { return taskTitle; }
         public void setTaskTitle(String taskTitle) { this.taskTitle = taskTitle; }
-        public UUID getUserId() { return userId; }
-        public void setUserId(UUID userId) { this.userId = userId; }
+        public Long getUserId() { return userId; }
+        public void setUserId(Long userId) { this.userId = userId; }
         public String getUserName() { return userName; }
         public void setUserName(String userName) { this.userName = userName; }
         public String getUserRoleCategory() { return userRoleCategory; }
@@ -202,8 +201,8 @@ public class WorklogDto {
 
         public String getStatus() { return status; }
         public void setStatus(String status) { this.status = status; }
-        public UUID getReviewedById() { return reviewedById; }
-        public void setReviewedById(UUID reviewedById) { this.reviewedById = reviewedById; }
+        public Long getReviewedById() { return reviewedById; }
+        public void setReviewedById(Long reviewedById) { this.reviewedById = reviewedById; }
         public String getReviewedByName() { return reviewedByName; }
         public void setReviewedByName(String reviewedByName) { this.reviewedByName = reviewedByName; }
         public Instant getReviewedAt() { return reviewedAt; }
@@ -311,7 +310,7 @@ public class WorklogDto {
     }
 
     public static class ContributorSummary {
-        private UUID userId;
+        private Long userId;
         private String userName;
         private String roleCategory;
         private BigDecimal totalHours;
@@ -320,7 +319,7 @@ public class WorklogDto {
 
         public ContributorSummary() {}
 
-        public ContributorSummary(UUID userId, String userName, String roleCategory,
+        public ContributorSummary(Long userId, String userName, String roleCategory,
                                   BigDecimal totalHours, BigDecimal billableHours, BigDecimal approvedHours) {
             this.userId = userId;
             this.userName = userName;
@@ -330,8 +329,8 @@ public class WorklogDto {
             this.approvedHours = approvedHours;
         }
 
-        public UUID getUserId() { return userId; }
-        public void setUserId(UUID userId) { this.userId = userId; }
+        public Long getUserId() { return userId; }
+        public void setUserId(Long userId) { this.userId = userId; }
         public String getUserName() { return userName; }
         public void setUserName(String userName) { this.userName = userName; }
         public String getRoleCategory() { return roleCategory; }

@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+
 import java.util.stream.Collectors;
 
 @Service
@@ -44,7 +44,7 @@ public class ProjectMemberService {
     }
 
     @Transactional
-    public ProjectMemberDto.ProjectMemberResponse assignMember(UUID projectId, ProjectMemberDto.AssignMemberRequest request) {
+    public ProjectMemberDto.ProjectMemberResponse assignMember(Long projectId, ProjectMemberDto.AssignMemberRequest request) {
         Project project = getProjectAndVerifyManageAccess(projectId);
 
         User user = userRepository.findById(request.getUserId())
@@ -104,7 +104,7 @@ public class ProjectMemberService {
     }
 
     @Transactional
-    public void removeMember(UUID projectId, UUID memberId) {
+    public void removeMember(Long projectId, Long memberId) {
         getProjectAndVerifyManageAccess(projectId);
 
         ProjectMember member = projectMemberRepository.findById(memberId)
@@ -120,7 +120,7 @@ public class ProjectMemberService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProjectMemberDto.ProjectMemberResponse> getProjectMembers(UUID projectId) {
+    public List<ProjectMemberDto.ProjectMemberResponse> getProjectMembers(Long projectId) {
         Project project = projectRepository.findById(projectId)
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
@@ -133,7 +133,7 @@ public class ProjectMemberService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProjectMemberDto.AvailableMemberResponse> getAvailableMembers(UUID projectId) {
+    public List<ProjectMemberDto.AvailableMemberResponse> getAvailableMembers(Long projectId) {
         getProjectAndVerifyManageAccess(projectId);
 
         List<User> activeTeamMembers = userRepository.findByRole_RoleCodeAndStatusAndIsDeletedFalse("TEAM_MEMBER", "ACTIVE");
@@ -156,7 +156,7 @@ public class ProjectMemberService {
                 .collect(Collectors.toList());
     }
 
-    private Project getProjectAndVerifyManageAccess(UUID projectId) {
+    private Project getProjectAndVerifyManageAccess(Long projectId) {
         Project project = projectRepository.findById(projectId)
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
@@ -171,7 +171,7 @@ public class ProjectMemberService {
 
     private void verifyProjectViewAccess(Project project, UserPrincipal currentUser) {
         String role = currentUser.getRoleCode();
-        UUID userId = currentUser.getId();
+        Long userId = currentUser.getId();
 
         if ("ADMIN".equalsIgnoreCase(role)) return;
 

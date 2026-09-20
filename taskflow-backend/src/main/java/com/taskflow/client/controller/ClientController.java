@@ -12,7 +12,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/clients")
@@ -60,7 +59,7 @@ public class ClientController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
     @Operation(summary = "Get client by ID")
-    public ResponseEntity<ApiResponse<ClientDto.ClientResponse>> getClientById(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<ClientDto.ClientResponse>> getClientById(@PathVariable Long id) {
         ClientDto.ClientResponse response = clientService.getClientById(id);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
@@ -69,7 +68,7 @@ public class ClientController {
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update client details (Admin only)")
     public ResponseEntity<ApiResponse<ClientDto.ClientResponse>> updateClient(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @Valid @RequestBody ClientDto.UpdateClientRequest request
     ) {
         ClientDto.ClientResponse response = clientService.updateClient(id, request);
@@ -79,7 +78,7 @@ public class ClientController {
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Toggle client active/inactive status (Admin only)")
-    public ResponseEntity<ApiResponse<ClientDto.ClientResponse>> toggleClientStatus(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<ClientDto.ClientResponse>> toggleClientStatus(@PathVariable Long id) {
         ClientDto.ClientResponse response = clientService.toggleClientStatus(id);
         return ResponseEntity.ok(ApiResponse.ok("Client status changed to " + response.getStatus(), response));
     }
@@ -87,7 +86,7 @@ public class ClientController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Soft delete client (Admin only)")
-    public ResponseEntity<ApiResponse<Void>> softDeleteClient(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<Void>> softDeleteClient(@PathVariable Long id) {
         clientService.softDeleteClient(id);
         return ResponseEntity.ok(ApiResponse.ok("Client deleted successfully", null));
     }

@@ -5,12 +5,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.UUID;
+
 
 @Repository
-public interface BugCommentRepository extends JpaRepository<BugComment, UUID> {
+public interface BugCommentRepository extends JpaRepository<BugComment, Long> {
 
-    List<BugComment> findByBug_BugIdOrderByCreatedAtAsc(UUID bugId);
+    List<BugComment> findByBug_BugIdOrderByCreatedAtAsc(Long bugId);
 
-    long countByBug_BugId(UUID bugId);
+    long countByBug_BugId(Long bugId);
 }

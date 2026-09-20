@@ -23,7 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,7 +50,7 @@ public class BugService {
     }
 
     @Transactional
-    public BugDto.BugResponse createBug(UUID projectId, BugDto.CreateBugRequest request) {
+    public BugDto.BugResponse createBug(Long projectId, BugDto.CreateBugRequest request) {
         Project project = projectRepository.findById(projectId)
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
@@ -115,7 +114,7 @@ public class BugService {
     }
 
     @Transactional(readOnly = true)
-    public List<BugDto.BugResponse> getBugsForProject(UUID projectId, String status, String severity, UUID assignedToId, String search) {
+    public List<BugDto.BugResponse> getBugsForProject(Long projectId, String status, String severity, Long assignedToId, String search) {
         Project project = projectRepository.findById(projectId)
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
@@ -145,7 +144,7 @@ public class BugService {
     @Transactional(readOnly = true)
     public List<BugDto.BugResponse> getMyBugs(String filterType) {
         UserPrincipal currentUser = getCurrentUserPrincipal();
-        UUID userId = currentUser.getId();
+        Long userId = currentUser.getId();
 
         List<Bug> bugs;
         if ("REPORTED".equalsIgnoreCase(filterType)) {
@@ -159,7 +158,7 @@ public class BugService {
     }
 
     @Transactional(readOnly = true)
-    public BugDto.BugDetailResponse getBugById(UUID bugId) {
+    public BugDto.BugDetailResponse getBugById(Long bugId) {
         Bug bug = bugRepository.findById(bugId)
                 .filter(b -> !b.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Bug not found with id: " + bugId));
@@ -184,7 +183,7 @@ public class BugService {
     }
 
     @Transactional
-    public BugDto.BugResponse assignBug(UUID bugId, BugDto.AssignBugRequest request) {
+    public BugDto.BugResponse assignBug(Long bugId, BugDto.AssignBugRequest request) {
         Bug bug = bugRepository.findById(bugId)
                 .filter(b -> !b.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Bug not found with id: " + bugId));
@@ -213,7 +212,7 @@ public class BugService {
     }
 
     @Transactional
-    public BugDto.BugResponse updateBugStatus(UUID bugId, BugDto.UpdateBugStatusRequest request) {
+    public BugDto.BugResponse updateBugStatus(Long bugId, BugDto.UpdateBugStatusRequest request) {
         Bug bug = bugRepository.findById(bugId)
                 .filter(b -> !b.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Bug not found with id: " + bugId));
@@ -228,7 +227,7 @@ public class BugService {
     }
 
     @Transactional
-    public BugDto.BugResponse resolveBug(UUID bugId, BugDto.ResolveBugRequest request) {
+    public BugDto.BugResponse resolveBug(Long bugId, BugDto.ResolveBugRequest request) {
         Bug bug = bugRepository.findById(bugId)
                 .filter(b -> !b.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Bug not found with id: " + bugId));
@@ -244,7 +243,7 @@ public class BugService {
     }
 
     @Transactional
-    public BugDto.BugResponse retestBug(UUID bugId, BugDto.RetestBugRequest request) {
+    public BugDto.BugResponse retestBug(Long bugId, BugDto.RetestBugRequest request) {
         Bug bug = bugRepository.findById(bugId)
                 .filter(b -> !b.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Bug not found with id: " + bugId));
@@ -264,7 +263,7 @@ public class BugService {
     }
 
     @Transactional
-    public BugDto.BugCommentResponse addComment(UUID bugId, BugDto.CreateBugCommentRequest request) {
+    public BugDto.BugCommentResponse addComment(Long bugId, BugDto.CreateBugCommentRequest request) {
         Bug bug = bugRepository.findById(bugId)
                 .filter(b -> !b.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Bug not found with id: " + bugId));
@@ -292,7 +291,7 @@ public class BugService {
     }
 
     @Transactional(readOnly = true)
-    public BugDto.BugStatsResponse getBugStats(UUID projectId) {
+    public BugDto.BugStatsResponse getBugStats(Long projectId) {
         long total = bugRepository.countByProject_ProjectIdAndIsDeletedFalse(projectId);
         long open = bugRepository.countByProject_ProjectIdAndStatusAndIsDeletedFalse(projectId, "OPEN");
         long assigned = bugRepository.countByProject_ProjectIdAndStatusAndIsDeletedFalse(projectId, "ASSIGNED");
@@ -308,7 +307,7 @@ public class BugService {
 
     private void verifyProjectAccess(Project project, UserPrincipal currentUser) {
         String role = currentUser.getRoleCode();
-        UUID userId = currentUser.getId();
+        Long userId = currentUser.getId();
 
         if ("ADMIN".equalsIgnoreCase(role)) return;
 

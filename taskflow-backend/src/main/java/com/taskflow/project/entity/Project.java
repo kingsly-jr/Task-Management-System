@@ -10,7 +10,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.UUID;
+
 
 @Entity
 @Table(name = "projects")
@@ -18,9 +18,9 @@ import java.util.UUID;
 public class Project {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "project_id", updatable = false, nullable = false)
-    private UUID projectId;
+    private Long projectId;
 
     @Column(name = "project_code", nullable = false, unique = true, length = 50)
     private String projectCode;
@@ -79,7 +79,7 @@ public class Project {
 
     public Project() {}
 
-    public Project(UUID projectId, String projectCode, String projectName, String description,
+    public Project(Long projectId, String projectCode, String projectName, String description,
                    Client client, User projectManager, LocalDate startDate, LocalDate expectedEndDate,
                    LocalDate actualEndDate, BigDecimal budget, String priority, String status,
                    Integer progress, String technologyStack, boolean isDeleted, Instant deletedAt,
@@ -109,7 +109,7 @@ public class Project {
     }
 
     public static class ProjectBuilder {
-        private UUID projectId;
+        private Long projectId;
         private String projectCode;
         private String projectName;
         private String description;
@@ -128,7 +128,7 @@ public class Project {
         private Instant createdAt;
         private Instant updatedAt;
 
-        public ProjectBuilder projectId(UUID projectId) { this.projectId = projectId; return this; }
+        public ProjectBuilder projectId(Long projectId) { this.projectId = projectId; return this; }
         public ProjectBuilder projectCode(String projectCode) { this.projectCode = projectCode; return this; }
         public ProjectBuilder projectName(String projectName) { this.projectName = projectName; return this; }
         public ProjectBuilder description(String description) { this.description = description; return this; }
@@ -154,8 +154,8 @@ public class Project {
         }
     }
 
-    public UUID getProjectId() { return projectId; }
-    public void setProjectId(UUID projectId) { this.projectId = projectId; }
+    public Long getProjectId() { return projectId; }
+    public void setProjectId(Long projectId) { this.projectId = projectId; }
     public String getProjectCode() { return projectCode; }
     public void setProjectCode(String projectCode) { this.projectCode = projectCode; }
     public String getProjectName() { return projectName; }

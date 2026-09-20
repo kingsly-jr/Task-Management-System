@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,7 +46,7 @@ public class ChangeRequestService {
     }
 
     @Transactional
-    public ChangeRequestDto.ChangeRequestResponse createChangeRequest(UUID projectId, ChangeRequestDto.CreateChangeRequest request) {
+    public ChangeRequestDto.ChangeRequestResponse createChangeRequest(Long projectId, ChangeRequestDto.CreateChangeRequest request) {
         Project project = projectRepository.findById(projectId)
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
@@ -85,7 +84,7 @@ public class ChangeRequestService {
     }
 
     @Transactional(readOnly = true)
-    public List<ChangeRequestDto.ChangeRequestResponse> getChangeRequestsForProject(UUID projectId, String status, String search) {
+    public List<ChangeRequestDto.ChangeRequestResponse> getChangeRequestsForProject(Long projectId, String status, String search) {
         Project project = projectRepository.findById(projectId)
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
@@ -109,7 +108,7 @@ public class ChangeRequestService {
     }
 
     @Transactional(readOnly = true)
-    public ChangeRequestDto.ChangeRequestDetailResponse getChangeRequestById(UUID id) {
+    public ChangeRequestDto.ChangeRequestDetailResponse getChangeRequestById(Long id) {
         ChangeRequest cr = changeRequestRepository.findById(id)
                 .filter(c -> !c.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Change request not found with id: " + id));
@@ -134,7 +133,7 @@ public class ChangeRequestService {
     }
 
     @Transactional
-    public ChangeRequestDto.ChangeRequestResponse reviewChangeRequest(UUID id, ChangeRequestDto.ReviewChangeRequest request) {
+    public ChangeRequestDto.ChangeRequestResponse reviewChangeRequest(Long id, ChangeRequestDto.ReviewChangeRequest request) {
         ChangeRequest cr = changeRequestRepository.findById(id)
                 .filter(c -> !c.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Change request not found with id: " + id));
@@ -157,7 +156,7 @@ public class ChangeRequestService {
     }
 
     @Transactional
-    public ChangeRequestDto.ChangeRequestResponse updateStatus(UUID id, ChangeRequestDto.UpdateStatusRequest request) {
+    public ChangeRequestDto.ChangeRequestResponse updateStatus(Long id, ChangeRequestDto.UpdateStatusRequest request) {
         ChangeRequest cr = changeRequestRepository.findById(id)
                 .filter(c -> !c.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Change request not found with id: " + id));
@@ -173,7 +172,7 @@ public class ChangeRequestService {
     }
 
     @Transactional
-    public ChangeRequestDto.CommentResponse addComment(UUID id, ChangeRequestDto.CreateCommentRequest request) {
+    public ChangeRequestDto.CommentResponse addComment(Long id, ChangeRequestDto.CreateCommentRequest request) {
         ChangeRequest cr = changeRequestRepository.findById(id)
                 .filter(c -> !c.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Change request not found with id: " + id));
@@ -201,7 +200,7 @@ public class ChangeRequestService {
     }
 
     @Transactional(readOnly = true)
-    public ChangeRequestDto.ChangeRequestStatsResponse getStats(UUID projectId) {
+    public ChangeRequestDto.ChangeRequestStatsResponse getStats(Long projectId) {
         List<ChangeRequest> list = changeRequestRepository.findByProject_ProjectIdAndIsDeletedFalseOrderByCreatedAtDesc(projectId);
 
         long total = list.size();
@@ -228,7 +227,7 @@ public class ChangeRequestService {
 
     private void verifyProjectViewAccess(Project project, UserPrincipal currentUser) {
         String role = currentUser.getRoleCode();
-        UUID userId = currentUser.getId();
+        Long userId = currentUser.getId();
 
         if ("ADMIN".equalsIgnoreCase(role)) return;
 

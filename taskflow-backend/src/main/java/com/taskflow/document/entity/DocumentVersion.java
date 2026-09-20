@@ -6,7 +6,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
-import java.util.UUID;
+
 
 @Entity
 @Table(name = "document_versions")
@@ -14,9 +14,9 @@ import java.util.UUID;
 public class DocumentVersion {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "version_id", updatable = false, nullable = false)
-    private UUID versionId;
+    private Long versionId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "document_id", nullable = false)
@@ -54,8 +54,8 @@ public class DocumentVersion {
         return new Builder();
     }
 
-    public UUID getVersionId() { return versionId; }
-    public void setVersionId(UUID versionId) { this.versionId = versionId; }
+    public Long getVersionId() { return versionId; }
+    public void setVersionId(Long versionId) { this.versionId = versionId; }
 
     public ProjectDocument getDocument() { return document; }
     public void setDocument(ProjectDocument document) { this.document = document; }

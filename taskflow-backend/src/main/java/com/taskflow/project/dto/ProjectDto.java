@@ -7,7 +7,6 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.UUID;
 
 public class ProjectDto {
 
@@ -21,10 +20,10 @@ public class ProjectDto {
         private String description;
 
         @NotNull(message = "Client is required")
-        private UUID clientId;
+        private Long clientId;
 
         @NotNull(message = "Project Manager is required")
-        private UUID projectManagerId;
+        private Long projectManagerId;
 
         @NotNull(message = "Start date is required")
         private LocalDate startDate;
@@ -45,10 +44,10 @@ public class ProjectDto {
         public void setProjectName(String projectName) { this.projectName = projectName; }
         public String getDescription() { return description; }
         public void setDescription(String description) { this.description = description; }
-        public UUID getClientId() { return clientId; }
-        public void setClientId(UUID clientId) { this.clientId = clientId; }
-        public UUID getProjectManagerId() { return projectManagerId; }
-        public void setProjectManagerId(UUID projectManagerId) { this.projectManagerId = projectManagerId; }
+        public Long getClientId() { return clientId; }
+        public void setClientId(Long clientId) { this.clientId = clientId; }
+        public Long getProjectManagerId() { return projectManagerId; }
+        public void setProjectManagerId(Long projectManagerId) { this.projectManagerId = projectManagerId; }
         public LocalDate getStartDate() { return startDate; }
         public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
         public LocalDate getExpectedEndDate() { return expectedEndDate; }
@@ -68,7 +67,7 @@ public class ProjectDto {
         private String projectName;
 
         private String description;
-        private UUID projectManagerId;
+        private Long projectManagerId;
         private LocalDate startDate;
         private LocalDate expectedEndDate;
         private LocalDate actualEndDate;
@@ -84,8 +83,8 @@ public class ProjectDto {
         public void setProjectName(String projectName) { this.projectName = projectName; }
         public String getDescription() { return description; }
         public void setDescription(String description) { this.description = description; }
-        public UUID getProjectManagerId() { return projectManagerId; }
-        public void setProjectManagerId(UUID projectManagerId) { this.projectManagerId = projectManagerId; }
+        public Long getProjectManagerId() { return projectManagerId; }
+        public void setProjectManagerId(Long projectManagerId) { this.projectManagerId = projectManagerId; }
         public LocalDate getStartDate() { return startDate; }
         public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
         public LocalDate getExpectedEndDate() { return expectedEndDate; }
@@ -105,17 +104,17 @@ public class ProjectDto {
     }
 
     public static class ProjectResponse {
-        private UUID projectId;
+        private Long projectId;
         private String projectCode;
         private String projectName;
         private String description;
 
-        private UUID clientId;
+        private Long clientId;
         private String clientCompanyName;
         private String clientContactPerson;
         private String clientEmail;
 
-        private UUID projectManagerId;
+        private Long projectManagerId;
         private String projectManagerName;
         private String projectManagerEmail;
 
@@ -133,9 +132,9 @@ public class ProjectDto {
 
         public ProjectResponse() {}
 
-        public ProjectResponse(UUID projectId, String projectCode, String projectName, String description,
-                               UUID clientId, String clientCompanyName, String clientContactPerson, String clientEmail,
-                               UUID projectManagerId, String projectManagerName, String projectManagerEmail,
+        public ProjectResponse(Long projectId, String projectCode, String projectName, String description,
+                               Long clientId, String clientCompanyName, String clientContactPerson, String clientEmail,
+                               Long projectManagerId, String projectManagerName, String projectManagerEmail,
                                LocalDate startDate, LocalDate expectedEndDate, LocalDate actualEndDate,
                                BigDecimal budget, String priority, String status, Integer progress,
                                String technologyStack, long teamMembersCount, Instant createdAt, Instant updatedAt) {
@@ -163,24 +162,24 @@ public class ProjectDto {
             this.updatedAt = updatedAt;
         }
 
-        public UUID getProjectId() { return projectId; }
-        public void setProjectId(UUID projectId) { this.projectId = projectId; }
+        public Long getProjectId() { return projectId; }
+        public void setProjectId(Long projectId) { this.projectId = projectId; }
         public String getProjectCode() { return projectCode; }
         public void setProjectCode(String projectCode) { this.projectCode = projectCode; }
         public String getProjectName() { return projectName; }
         public void setProjectName(String projectName) { this.projectName = projectName; }
         public String getDescription() { return description; }
         public void setDescription(String description) { this.description = description; }
-        public UUID getClientId() { return clientId; }
-        public void setClientId(UUID clientId) { this.clientId = clientId; }
+        public Long getClientId() { return clientId; }
+        public void setClientId(Long clientId) { this.clientId = clientId; }
         public String getClientCompanyName() { return clientCompanyName; }
         public void setClientCompanyName(String clientCompanyName) { this.clientCompanyName = clientCompanyName; }
         public String getClientContactPerson() { return clientContactPerson; }
         public void setClientContactPerson(String clientContactPerson) { this.clientContactPerson = clientContactPerson; }
         public String getClientEmail() { return clientEmail; }
         public void setClientEmail(String clientEmail) { this.clientEmail = clientEmail; }
-        public UUID getProjectManagerId() { return projectManagerId; }
-        public void setProjectManagerId(UUID projectManagerId) { this.projectManagerId = projectManagerId; }
+        public Long getProjectManagerId() { return projectManagerId; }
+        public void setProjectManagerId(Long projectManagerId) { this.projectManagerId = projectManagerId; }
         public String getProjectManagerName() { return projectManagerName; }
         public void setProjectManagerName(String projectManagerName) { this.projectManagerName = projectManagerName; }
         public String getProjectManagerEmail() { return projectManagerEmail; }

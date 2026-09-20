@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,7 +43,7 @@ public class MessageService {
     }
 
     @Transactional
-    public MessageDto.MessageResponse sendMessage(UUID projectId, MessageDto.SendMessageRequest request) {
+    public MessageDto.MessageResponse sendMessage(Long projectId, MessageDto.SendMessageRequest request) {
         Project project = projectRepository.findById(projectId)
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
@@ -107,7 +106,7 @@ public class MessageService {
     }
 
     @Transactional(readOnly = true)
-    public List<MessageDto.MessageResponse> getMessages(UUID projectId, String channel) {
+    public List<MessageDto.MessageResponse> getMessages(Long projectId, String channel) {
         Project project = projectRepository.findById(projectId)
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
@@ -142,7 +141,7 @@ public class MessageService {
 
     private void verifyProjectChatAccess(Project project, UserPrincipal currentUser) {
         String role = currentUser.getRoleCode();
-        UUID userId = currentUser.getId();
+        Long userId = currentUser.getId();
 
         if ("ADMIN".equalsIgnoreCase(role)) return;
 

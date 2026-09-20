@@ -7,7 +7,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
-import java.util.UUID;
+
 
 @Entity
 @Table(name = "project_members")
@@ -15,9 +15,9 @@ import java.util.UUID;
 public class ProjectMember {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "project_member_id", updatable = false, nullable = false)
-    private UUID projectMemberId;
+    private Long projectMemberId;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "project_id", nullable = false)
@@ -43,7 +43,7 @@ public class ProjectMember {
 
     public ProjectMember() {}
 
-    public ProjectMember(UUID projectMemberId, Project project, User user, RoleCategory roleCategory,
+    public ProjectMember(Long projectMemberId, Project project, User user, RoleCategory roleCategory,
                          Instant assignedAt, Instant removedAt, String status) {
         this.projectMemberId = projectMemberId;
         this.project = project;
@@ -59,7 +59,7 @@ public class ProjectMember {
     }
 
     public static class ProjectMemberBuilder {
-        private UUID projectMemberId;
+        private Long projectMemberId;
         private Project project;
         private User user;
         private RoleCategory roleCategory;
@@ -67,7 +67,7 @@ public class ProjectMember {
         private Instant removedAt;
         private String status = "ACTIVE";
 
-        public ProjectMemberBuilder projectMemberId(UUID projectMemberId) { this.projectMemberId = projectMemberId; return this; }
+        public ProjectMemberBuilder projectMemberId(Long projectMemberId) { this.projectMemberId = projectMemberId; return this; }
         public ProjectMemberBuilder project(Project project) { this.project = project; return this; }
         public ProjectMemberBuilder user(User user) { this.user = user; return this; }
         public ProjectMemberBuilder roleCategory(RoleCategory roleCategory) { this.roleCategory = roleCategory; return this; }
@@ -80,8 +80,8 @@ public class ProjectMember {
         }
     }
 
-    public UUID getProjectMemberId() { return projectMemberId; }
-    public void setProjectMemberId(UUID projectMemberId) { this.projectMemberId = projectMemberId; }
+    public Long getProjectMemberId() { return projectMemberId; }
+    public void setProjectMemberId(Long projectMemberId) { this.projectMemberId = projectMemberId; }
     public Project getProject() { return project; }
     public void setProject(Project project) { this.project = project; }
     public User getUser() { return user; }

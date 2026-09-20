@@ -8,7 +8,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class TaskDto {
 
@@ -22,8 +21,8 @@ public class TaskDto {
         private BigDecimal estimatedHours;
         private LocalDate startDate;
         private LocalDate dueDate;
-        private UUID milestoneId;
-        private List<UUID> assigneeIds = new ArrayList<>();
+        private Long milestoneId;
+        private List<Long> assigneeIds = new ArrayList<>();
 
         public CreateTaskRequest() {}
 
@@ -39,10 +38,10 @@ public class TaskDto {
         public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
         public LocalDate getDueDate() { return dueDate; }
         public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
-        public UUID getMilestoneId() { return milestoneId; }
-        public void setMilestoneId(UUID milestoneId) { this.milestoneId = milestoneId; }
-        public List<UUID> getAssigneeIds() { return assigneeIds; }
-        public void setAssigneeIds(List<UUID> assigneeIds) { this.assigneeIds = assigneeIds; }
+        public Long getMilestoneId() { return milestoneId; }
+        public void setMilestoneId(Long milestoneId) { this.milestoneId = milestoneId; }
+        public List<Long> getAssigneeIds() { return assigneeIds; }
+        public void setAssigneeIds(List<Long> assigneeIds) { this.assigneeIds = assigneeIds; }
     }
 
     public static class UpdateTaskRequest {
@@ -56,8 +55,8 @@ public class TaskDto {
         private BigDecimal loggedHours;
         private LocalDate startDate;
         private LocalDate dueDate;
-        private UUID milestoneId;
-        private List<UUID> assigneeIds;
+        private Long milestoneId;
+        private List<Long> assigneeIds;
 
         public UpdateTaskRequest() {}
 
@@ -77,29 +76,29 @@ public class TaskDto {
         public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
         public LocalDate getDueDate() { return dueDate; }
         public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
-        public UUID getMilestoneId() { return milestoneId; }
-        public void setMilestoneId(UUID milestoneId) { this.milestoneId = milestoneId; }
-        public List<UUID> getAssigneeIds() { return assigneeIds; }
-        public void setAssigneeIds(List<UUID> assigneeIds) { this.assigneeIds = assigneeIds; }
+        public Long getMilestoneId() { return milestoneId; }
+        public void setMilestoneId(Long milestoneId) { this.milestoneId = milestoneId; }
+        public List<Long> getAssigneeIds() { return assigneeIds; }
+        public void setAssigneeIds(List<Long> assigneeIds) { this.assigneeIds = assigneeIds; }
     }
 
     public static class AssigneeSummary {
-        private UUID userId;
+        private Long userId;
         private String fullName;
         private String email;
         private String roleCategoryName;
 
         public AssigneeSummary() {}
 
-        public AssigneeSummary(UUID userId, String fullName, String email, String roleCategoryName) {
+        public AssigneeSummary(Long userId, String fullName, String email, String roleCategoryName) {
             this.userId = userId;
             this.fullName = fullName;
             this.email = email;
             this.roleCategoryName = roleCategoryName;
         }
 
-        public UUID getUserId() { return userId; }
-        public void setUserId(UUID userId) { this.userId = userId; }
+        public Long getUserId() { return userId; }
+        public void setUserId(Long userId) { this.userId = userId; }
         public String getFullName() { return fullName; }
         public void setFullName(String fullName) { this.fullName = fullName; }
         public String getEmail() { return email; }
@@ -109,8 +108,8 @@ public class TaskDto {
     }
 
     public static class TaskResponse {
-        private UUID taskId;
-        private UUID projectId;
+        private Long taskId;
+        private Long projectId;
         private String projectCode;
         private String projectName;
         private String taskCode;
@@ -122,7 +121,7 @@ public class TaskDto {
         private BigDecimal loggedHours;
         private LocalDate startDate;
         private LocalDate dueDate;
-        private UUID milestoneId;
+        private Long milestoneId;
         private String milestoneTitle;
         private long subtasksCount;
         private long completedSubtasksCount;
@@ -132,7 +131,7 @@ public class TaskDto {
 
         public TaskResponse() {}
 
-        public TaskResponse(UUID taskId, UUID projectId, String projectCode, String projectName,
+        public TaskResponse(Long taskId, Long projectId, String projectCode, String projectName,
                             String taskCode, String title, String description, String status,
                             String priority, BigDecimal estimatedHours, BigDecimal loggedHours,
                             LocalDate startDate, LocalDate dueDate, long subtasksCount,
@@ -158,10 +157,10 @@ public class TaskDto {
             this.updatedAt = updatedAt;
         }
 
-        public UUID getTaskId() { return taskId; }
-        public void setTaskId(UUID taskId) { this.taskId = taskId; }
-        public UUID getProjectId() { return projectId; }
-        public void setProjectId(UUID projectId) { this.projectId = projectId; }
+        public Long getTaskId() { return taskId; }
+        public void setTaskId(Long taskId) { this.taskId = taskId; }
+        public Long getProjectId() { return projectId; }
+        public void setProjectId(Long projectId) { this.projectId = projectId; }
         public String getProjectCode() { return projectCode; }
         public void setProjectCode(String projectCode) { this.projectCode = projectCode; }
         public String getProjectName() { return projectName; }
@@ -184,8 +183,8 @@ public class TaskDto {
         public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
         public LocalDate getDueDate() { return dueDate; }
         public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
-        public UUID getMilestoneId() { return milestoneId; }
-        public void setMilestoneId(UUID milestoneId) { this.milestoneId = milestoneId; }
+        public Long getMilestoneId() { return milestoneId; }
+        public void setMilestoneId(Long milestoneId) { this.milestoneId = milestoneId; }
         public String getMilestoneTitle() { return milestoneTitle; }
         public void setMilestoneTitle(String milestoneTitle) { this.milestoneTitle = milestoneTitle; }
         public long getSubtasksCount() { return subtasksCount; }
@@ -223,22 +222,22 @@ public class TaskDto {
     }
 
     public static class SubtaskResponse {
-        private UUID subtaskId;
+        private Long subtaskId;
         private String title;
         private boolean isCompleted;
         private Instant createdAt;
 
         public SubtaskResponse() {}
 
-        public SubtaskResponse(UUID subtaskId, String title, boolean isCompleted, Instant createdAt) {
+        public SubtaskResponse(Long subtaskId, String title, boolean isCompleted, Instant createdAt) {
             this.subtaskId = subtaskId;
             this.title = title;
             this.isCompleted = isCompleted;
             this.createdAt = createdAt;
         }
 
-        public UUID getSubtaskId() { return subtaskId; }
-        public void setSubtaskId(UUID subtaskId) { this.subtaskId = subtaskId; }
+        public Long getSubtaskId() { return subtaskId; }
+        public void setSubtaskId(Long subtaskId) { this.subtaskId = subtaskId; }
         public String getTitle() { return title; }
         public void setTitle(String title) { this.title = title; }
         public boolean isCompleted() { return isCompleted; }
@@ -258,15 +257,15 @@ public class TaskDto {
     }
 
     public static class CommentResponse {
-        private UUID commentId;
-        private UUID userId;
+        private Long commentId;
+        private Long userId;
         private String userName;
         private String content;
         private Instant createdAt;
 
         public CommentResponse() {}
 
-        public CommentResponse(UUID commentId, UUID userId, String userName, String content, Instant createdAt) {
+        public CommentResponse(Long commentId, Long userId, String userName, String content, Instant createdAt) {
             this.commentId = commentId;
             this.userId = userId;
             this.userName = userName;
@@ -274,10 +273,10 @@ public class TaskDto {
             this.createdAt = createdAt;
         }
 
-        public UUID getCommentId() { return commentId; }
-        public void setCommentId(UUID commentId) { this.commentId = commentId; }
-        public UUID getUserId() { return userId; }
-        public void setUserId(UUID userId) { this.userId = userId; }
+        public Long getCommentId() { return commentId; }
+        public void setCommentId(Long commentId) { this.commentId = commentId; }
+        public Long getUserId() { return userId; }
+        public void setUserId(Long userId) { this.userId = userId; }
         public String getUserName() { return userName; }
         public void setUserName(String userName) { this.userName = userName; }
         public String getContent() { return content; }

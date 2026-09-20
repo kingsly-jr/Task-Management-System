@@ -2,32 +2,31 @@ package com.taskflow.project.dto;
 
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
-import java.util.UUID;
 
 public class ProjectMemberDto {
 
     public static class AssignMemberRequest {
         @NotNull(message = "User is required")
-        private UUID userId;
+        private Long userId;
 
         private Long roleCategoryId;
 
         public AssignMemberRequest() {}
 
-        public AssignMemberRequest(UUID userId, Long roleCategoryId) {
+        public AssignMemberRequest(Long userId, Long roleCategoryId) {
             this.userId = userId;
             this.roleCategoryId = roleCategoryId;
         }
 
-        public UUID getUserId() { return userId; }
-        public void setUserId(UUID userId) { this.userId = userId; }
+        public Long getUserId() { return userId; }
+        public void setUserId(Long userId) { this.userId = userId; }
         public Long getRoleCategoryId() { return roleCategoryId; }
         public void setRoleCategoryId(Long roleCategoryId) { this.roleCategoryId = roleCategoryId; }
     }
 
     public static class ProjectMemberResponse {
-        private UUID projectMemberId;
-        private UUID userId;
+        private Long projectMemberId;
+        private Long userId;
         private String fullName;
         private String email;
         private Long roleCategoryId;
@@ -37,7 +36,7 @@ public class ProjectMemberDto {
 
         public ProjectMemberResponse() {}
 
-        public ProjectMemberResponse(UUID projectMemberId, UUID userId, String fullName, String email,
+        public ProjectMemberResponse(Long projectMemberId, Long userId, String fullName, String email,
                                      Long roleCategoryId, String roleCategoryName, Instant assignedAt, String status) {
             this.projectMemberId = projectMemberId;
             this.userId = userId;
@@ -49,10 +48,10 @@ public class ProjectMemberDto {
             this.status = status;
         }
 
-        public UUID getProjectMemberId() { return projectMemberId; }
-        public void setProjectMemberId(UUID projectMemberId) { this.projectMemberId = projectMemberId; }
-        public UUID getUserId() { return userId; }
-        public void setUserId(UUID userId) { this.userId = userId; }
+        public Long getProjectMemberId() { return projectMemberId; }
+        public void setProjectMemberId(Long projectMemberId) { this.projectMemberId = projectMemberId; }
+        public Long getUserId() { return userId; }
+        public void setUserId(Long userId) { this.userId = userId; }
         public String getFullName() { return fullName; }
         public void setFullName(String fullName) { this.fullName = fullName; }
         public String getEmail() { return email; }
@@ -68,7 +67,7 @@ public class ProjectMemberDto {
     }
 
     public static class AvailableMemberResponse {
-        private UUID userId;
+        private Long userId;
         private String fullName;
         private String email;
         private Long roleCategoryId;
@@ -77,7 +76,7 @@ public class ProjectMemberDto {
 
         public AvailableMemberResponse() {}
 
-        public AvailableMemberResponse(UUID userId, String fullName, String email,
+        public AvailableMemberResponse(Long userId, String fullName, String email,
                                        Long roleCategoryId, String roleCategoryName, long activeProjectsCount) {
             this.userId = userId;
             this.fullName = fullName;
@@ -87,8 +86,8 @@ public class ProjectMemberDto {
             this.activeProjectsCount = activeProjectsCount;
         }
 
-        public UUID getUserId() { return userId; }
-        public void setUserId(UUID userId) { this.userId = userId; }
+        public Long getUserId() { return userId; }
+        public void setUserId(Long userId) { this.userId = userId; }
         public String getFullName() { return fullName; }
         public void setFullName(String fullName) { this.fullName = fullName; }
         public String getEmail() { return email; }

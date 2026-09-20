@@ -39,7 +39,7 @@ public class FileStorageService {
         }
     }
 
-    public FileUploadResult storeFile(UUID projectId, MultipartFile file) {
+    public FileUploadResult storeFile(Long projectId, MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("Failed to store empty file");
         }

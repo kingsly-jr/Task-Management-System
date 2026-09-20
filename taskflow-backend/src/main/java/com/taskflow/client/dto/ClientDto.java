@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Size;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 public class ClientDto {
 
@@ -95,7 +94,7 @@ public class ClientDto {
     }
 
     public static class ClientResponse {
-        private UUID clientId;
+        private Long clientId;
         private String companyName;
         private String contactPerson;
         private String email;
@@ -103,7 +102,7 @@ public class ClientDto {
         private String address;
         private String country;
         private String status;
-        private UUID userId;
+        private Long userId;
         private String temporaryPassword; // Only returned on creation
         private long activeProjectsCount;
         private Instant createdAt;
@@ -111,9 +110,9 @@ public class ClientDto {
 
         public ClientResponse() {}
 
-        public ClientResponse(UUID clientId, String companyName, String contactPerson, String email,
+        public ClientResponse(Long clientId, String companyName, String contactPerson, String email,
                               String phone, String address, String country, String status,
-                              UUID userId, String temporaryPassword, long activeProjectsCount,
+                              Long userId, String temporaryPassword, long activeProjectsCount,
                               Instant createdAt, Instant updatedAt) {
             this.clientId = clientId;
             this.companyName = companyName;
@@ -130,8 +129,8 @@ public class ClientDto {
             this.updatedAt = updatedAt;
         }
 
-        public UUID getClientId() { return clientId; }
-        public void setClientId(UUID clientId) { this.clientId = clientId; }
+        public Long getClientId() { return clientId; }
+        public void setClientId(Long clientId) { this.clientId = clientId; }
         public String getCompanyName() { return companyName; }
         public void setCompanyName(String companyName) { this.companyName = companyName; }
         public String getContactPerson() { return contactPerson; }
@@ -146,8 +145,8 @@ public class ClientDto {
         public void setCountry(String country) { this.country = country; }
         public String getStatus() { return status; }
         public void setStatus(String status) { this.status = status; }
-        public UUID getUserId() { return userId; }
-        public void setUserId(UUID userId) { this.userId = userId; }
+        public Long getUserId() { return userId; }
+        public void setUserId(Long userId) { this.userId = userId; }
         public String getTemporaryPassword() { return temporaryPassword; }
         public void setTemporaryPassword(String temporaryPassword) { this.temporaryPassword = temporaryPassword; }
         public long getActiveProjectsCount() { return activeProjectsCount; }

@@ -8,7 +8,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
-import java.util.UUID;
+
 
 @Entity
 @Table(name = "project_documents")
@@ -16,9 +16,9 @@ import java.util.UUID;
 public class ProjectDocument {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "document_id", updatable = false, nullable = false)
-    private UUID documentId;
+    private Long documentId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id", nullable = false)
@@ -78,8 +78,8 @@ public class ProjectDocument {
         return new Builder();
     }
 
-    public UUID getDocumentId() { return documentId; }
-    public void setDocumentId(UUID documentId) { this.documentId = documentId; }
+    public Long getDocumentId() { return documentId; }
+    public void setDocumentId(Long documentId) { this.documentId = documentId; }
 
     public Project getProject() { return project; }
     public void setProject(Project project) { this.project = project; }

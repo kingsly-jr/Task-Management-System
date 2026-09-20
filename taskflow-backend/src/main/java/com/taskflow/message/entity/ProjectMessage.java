@@ -7,7 +7,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
-import java.util.UUID;
+
 
 @Entity
 @Table(name = "project_messages")
@@ -15,9 +15,9 @@ import java.util.UUID;
 public class ProjectMessage {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "message_id", updatable = false, nullable = false)
-    private UUID messageId;
+    private Long messageId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id", nullable = false)
@@ -49,8 +49,8 @@ public class ProjectMessage {
         return new Builder();
     }
 
-    public UUID getMessageId() { return messageId; }
-    public void setMessageId(UUID messageId) { this.messageId = messageId; }
+    public Long getMessageId() { return messageId; }
+    public void setMessageId(Long messageId) { this.messageId = messageId; }
 
     public Project getProject() { return project; }
     public void setProject(Project project) { this.project = project; }

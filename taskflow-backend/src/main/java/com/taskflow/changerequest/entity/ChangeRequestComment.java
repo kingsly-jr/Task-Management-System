@@ -6,7 +6,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
-import java.util.UUID;
+
 
 @Entity
 @Table(name = "change_request_comments")
@@ -14,9 +14,9 @@ import java.util.UUID;
 public class ChangeRequestComment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id", updatable = false, nullable = false)
-    private UUID commentId;
+    private Long commentId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "change_request_id", nullable = false)
@@ -35,7 +35,7 @@ public class ChangeRequestComment {
 
     public ChangeRequestComment() {}
 
-    public ChangeRequestComment(UUID commentId, ChangeRequest changeRequest, User user, String content, Instant createdAt) {
+    public ChangeRequestComment(Long commentId, ChangeRequest changeRequest, User user, String content, Instant createdAt) {
         this.commentId = commentId;
         this.changeRequest = changeRequest;
         this.user = user;
@@ -48,13 +48,13 @@ public class ChangeRequestComment {
     }
 
     public static class ChangeRequestCommentBuilder {
-        private UUID commentId;
+        private Long commentId;
         private ChangeRequest changeRequest;
         private User user;
         private String content;
         private Instant createdAt;
 
-        public ChangeRequestCommentBuilder commentId(UUID commentId) { this.commentId = commentId; return this; }
+        public ChangeRequestCommentBuilder commentId(Long commentId) { this.commentId = commentId; return this; }
         public ChangeRequestCommentBuilder changeRequest(ChangeRequest changeRequest) { this.changeRequest = changeRequest; return this; }
         public ChangeRequestCommentBuilder user(User user) { this.user = user; return this; }
         public ChangeRequestCommentBuilder content(String content) { this.content = content; return this; }
@@ -65,8 +65,8 @@ public class ChangeRequestComment {
         }
     }
 
-    public UUID getCommentId() { return commentId; }
-    public void setCommentId(UUID commentId) { this.commentId = commentId; }
+    public Long getCommentId() { return commentId; }
+    public void setCommentId(Long commentId) { this.commentId = commentId; }
     public ChangeRequest getChangeRequest() { return changeRequest; }
     public void setChangeRequest(ChangeRequest changeRequest) { this.changeRequest = changeRequest; }
     public User getUser() { return user; }

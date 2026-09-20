@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,7 +41,7 @@ public class MilestoneService {
     }
 
     @Transactional
-    public MilestoneDto.MilestoneResponse createMilestone(UUID projectId, MilestoneDto.CreateMilestoneRequest request) {
+    public MilestoneDto.MilestoneResponse createMilestone(Long projectId, MilestoneDto.CreateMilestoneRequest request) {
         Project project = getProjectAndVerifyManageAccess(projectId);
 
         Milestone milestone = Milestone.builder()
@@ -60,7 +59,7 @@ public class MilestoneService {
     }
 
     @Transactional(readOnly = true)
-    public List<MilestoneDto.MilestoneResponse> getMilestonesForProject(UUID projectId) {
+    public List<MilestoneDto.MilestoneResponse> getMilestonesForProject(Long projectId) {
         Project project = projectRepository.findById(projectId)
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
@@ -75,7 +74,7 @@ public class MilestoneService {
     }
 
     @Transactional(readOnly = true)
-    public MilestoneDto.MilestoneResponse getMilestoneById(UUID id) {
+    public MilestoneDto.MilestoneResponse getMilestoneById(Long id) {
         Milestone milestone = milestoneRepository.findById(id)
                 .filter(m -> !m.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Milestone not found with id: " + id));
@@ -87,7 +86,7 @@ public class MilestoneService {
     }
 
     @Transactional
-    public MilestoneDto.MilestoneResponse updateMilestone(UUID id, MilestoneDto.UpdateMilestoneRequest request) {
+    public MilestoneDto.MilestoneResponse updateMilestone(Long id, MilestoneDto.UpdateMilestoneRequest request) {
         Milestone milestone = milestoneRepository.findById(id)
                 .filter(m -> !m.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Milestone not found with id: " + id));
@@ -118,7 +117,7 @@ public class MilestoneService {
     }
 
     @Transactional
-    public void deleteMilestone(UUID id) {
+    public void deleteMilestone(Long id) {
         Milestone milestone = milestoneRepository.findById(id)
                 .filter(m -> !m.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Milestone not found with id: " + id));
@@ -141,7 +140,7 @@ public class MilestoneService {
     }
 
     @Transactional(readOnly = true)
-    public MilestoneDto.MilestoneStatsResponse getMilestoneStats(UUID projectId) {
+    public MilestoneDto.MilestoneStatsResponse getMilestoneStats(Long projectId) {
         long total = milestoneRepository.countByProject_ProjectIdAndIsDeletedFalse(projectId);
         long inProgress = milestoneRepository.countByProject_ProjectIdAndStatusAndIsDeletedFalse(projectId, "IN_PROGRESS");
         long completed = milestoneRepository.countByProject_ProjectIdAndStatusAndIsDeletedFalse(projectId, "COMPLETED");
@@ -181,7 +180,7 @@ public class MilestoneService {
         );
     }
 
-    private Project getProjectAndVerifyManageAccess(UUID projectId) {
+    private Project getProjectAndVerifyManageAccess(Long projectId) {
         Project project = projectRepository.findById(projectId)
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
@@ -201,7 +200,7 @@ public class MilestoneService {
 
     private void verifyProjectViewAccess(Project project, UserPrincipal currentUser) {
         String role = currentUser.getRoleCode();
-        UUID userId = currentUser.getId();
+        Long userId = currentUser.getId();
 
         if ("ADMIN".equalsIgnoreCase(role)) return;
 

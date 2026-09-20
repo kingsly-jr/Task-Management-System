@@ -8,7 +8,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
-import java.util.UUID;
+
 
 @Entity
 @Table(name = "users")
@@ -16,9 +16,9 @@ import java.util.UUID;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id", updatable = false, nullable = false)
-    private UUID userId;
+    private Long userId;
 
     @Column(name = "first_name", nullable = false, length = 100)
     private String firstName;
@@ -65,7 +65,7 @@ public class User {
 
     public User() {}
 
-    public User(UUID userId, String firstName, String lastName, String email, String passwordHash,
+    public User(Long userId, String firstName, String lastName, String email, String passwordHash,
                 String phone, Role role, RoleCategory roleCategory, String status,
                 boolean isFirstLogin, boolean isDeleted, Instant deletedAt, Instant createdAt, Instant updatedAt) {
         this.userId = userId;
@@ -89,7 +89,7 @@ public class User {
     }
 
     public static class UserBuilder {
-        private UUID userId;
+        private Long userId;
         private String firstName;
         private String lastName;
         private String email;
@@ -104,7 +104,7 @@ public class User {
         private Instant createdAt;
         private Instant updatedAt;
 
-        public UserBuilder userId(UUID userId) { this.userId = userId; return this; }
+        public UserBuilder userId(Long userId) { this.userId = userId; return this; }
         public UserBuilder firstName(String firstName) { this.firstName = firstName; return this; }
         public UserBuilder lastName(String lastName) { this.lastName = lastName; return this; }
         public UserBuilder email(String email) { this.email = email; return this; }
@@ -124,8 +124,8 @@ public class User {
         }
     }
 
-    public UUID getUserId() { return userId; }
-    public void setUserId(UUID userId) { this.userId = userId; }
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
     public String getLastName() { return lastName; }

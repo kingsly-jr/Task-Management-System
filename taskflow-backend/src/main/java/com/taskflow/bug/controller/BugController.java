@@ -12,7 +12,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -29,7 +28,7 @@ public class BugController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER')")
     @Operation(summary = "Report defect/bug for a project")
     public ResponseEntity<ApiResponse<BugDto.BugResponse>> createBug(
-            @PathVariable UUID projectId,
+            @PathVariable Long projectId,
             @Valid @RequestBody BugDto.CreateBugRequest request) {
         BugDto.BugResponse response = bugService.createBug(projectId, request);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -40,10 +39,10 @@ public class BugController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'CLIENT')")
     @Operation(summary = "Get all bugs for project with filtering")
     public ResponseEntity<ApiResponse<List<BugDto.BugResponse>>> getBugsForProject(
-            @PathVariable UUID projectId,
+            @PathVariable Long projectId,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String severity,
-            @RequestParam(required = false) UUID assignedToId,
+            @RequestParam(required = false) Long assignedToId,
             @RequestParam(required = false) String search) {
         List<BugDto.BugResponse> list = bugService.getBugsForProject(projectId, status, severity, assignedToId, search);
         return ResponseEntity.ok(ApiResponse.ok(list));
@@ -53,7 +52,7 @@ public class BugController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'CLIENT')")
     @Operation(summary = "Get bug summary metrics and status distribution")
     public ResponseEntity<ApiResponse<BugDto.BugStatsResponse>> getBugStats(
-            @PathVariable UUID projectId) {
+            @PathVariable Long projectId) {
         BugDto.BugStatsResponse stats = bugService.getBugStats(projectId);
         return ResponseEntity.ok(ApiResponse.ok(stats));
     }
@@ -70,7 +69,7 @@ public class BugController {
     @GetMapping("/bugs/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'CLIENT')")
     @Operation(summary = "Get detailed bug information including activity thread")
-    public ResponseEntity<ApiResponse<BugDto.BugDetailResponse>> getBugById(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<BugDto.BugDetailResponse>> getBugById(@PathVariable Long id) {
         BugDto.BugDetailResponse response = bugService.getBugById(id);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
@@ -79,7 +78,7 @@ public class BugController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
     @Operation(summary = "Assign bug to a project team developer (PM or Admin)")
     public ResponseEntity<ApiResponse<BugDto.BugResponse>> assignBug(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @Valid @RequestBody BugDto.AssignBugRequest request) {
         BugDto.BugResponse response = bugService.assignBug(id, request);
         return ResponseEntity.ok(ApiResponse.ok("Bug assigned successfully", response));
@@ -89,7 +88,7 @@ public class BugController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER')")
     @Operation(summary = "Update bug status (e.g. IN_PROGRESS, RESOLVED, UNDER_RETEST)")
     public ResponseEntity<ApiResponse<BugDto.BugResponse>> updateBugStatus(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @Valid @RequestBody BugDto.UpdateBugStatusRequest request) {
         BugDto.BugResponse response = bugService.updateBugStatus(id, request);
         return ResponseEntity.ok(ApiResponse.ok("Bug status updated", response));
@@ -99,7 +98,7 @@ public class BugController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER')")
     @Operation(summary = "Developer resolves bug with fix description notes")
     public ResponseEntity<ApiResponse<BugDto.BugResponse>> resolveBug(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @Valid @RequestBody BugDto.ResolveBugRequest request) {
         BugDto.BugResponse response = bugService.resolveBug(id, request);
         return ResponseEntity.ok(ApiResponse.ok("Bug marked as RESOLVED", response));
@@ -109,7 +108,7 @@ public class BugController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER')")
     @Operation(summary = "QA verifies fix: pass marks CLOSED, fail marks REOPENED")
     public ResponseEntity<ApiResponse<BugDto.BugResponse>> retestBug(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @Valid @RequestBody BugDto.RetestBugRequest request) {
         BugDto.BugResponse response = bugService.retestBug(id, request);
         String msg = request.isPassed() ? "Bug verified and CLOSED" : "Bug retest failed and REOPENED";
@@ -120,7 +119,7 @@ public class BugController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER')")
     @Operation(summary = "Post comment to bug discussion thread")
     public ResponseEntity<ApiResponse<BugDto.BugCommentResponse>> addComment(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @Valid @RequestBody BugDto.CreateBugCommentRequest request) {
         BugDto.BugCommentResponse response = bugService.addComment(id, request);
         return ResponseEntity.status(HttpStatus.CREATED)

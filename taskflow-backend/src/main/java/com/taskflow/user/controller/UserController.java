@@ -12,7 +12,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -72,7 +71,7 @@ public class UserController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
     @Operation(summary = "Get user by ID")
-    public ResponseEntity<ApiResponse<UserDto.UserResponse>> getUserById(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<UserDto.UserResponse>> getUserById(@PathVariable Long id) {
         UserDto.UserResponse response = userService.getUserById(id);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
@@ -81,7 +80,7 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update user details (Admin only)")
     public ResponseEntity<ApiResponse<UserDto.UserResponse>> updateUser(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @Valid @RequestBody UserDto.UpdateUserRequest request
     ) {
         UserDto.UserResponse response = userService.updateUser(id, request);
@@ -91,7 +90,7 @@ public class UserController {
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Toggle user active/inactive status (Admin only)")
-    public ResponseEntity<ApiResponse<UserDto.UserResponse>> toggleUserStatus(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<UserDto.UserResponse>> toggleUserStatus(@PathVariable Long id) {
         UserDto.UserResponse response = userService.toggleUserStatus(id);
         return ResponseEntity.ok(ApiResponse.ok("User status changed to " + response.getStatus(), response));
     }
@@ -100,7 +99,7 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Reset user password with temporary credentials (Admin only)")
     public ResponseEntity<ApiResponse<Map<String, String>>> resetUserPassword(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @RequestBody(required = false) UserDto.ResetPasswordAdminRequest request
     ) {
         String tempPassword = userService.resetUserPassword(id, request);
@@ -113,7 +112,7 @@ public class UserController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Soft delete user (Admin only)")
-    public ResponseEntity<ApiResponse<Void>> softDeleteUser(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<Void>> softDeleteUser(@PathVariable Long id) {
         userService.softDeleteUser(id);
         return ResponseEntity.ok(ApiResponse.ok("User deleted successfully", null));
     }

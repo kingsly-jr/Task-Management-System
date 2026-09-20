@@ -6,7 +6,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
-import java.util.UUID;
+
 
 @Entity
 @Table(name = "bug_comments")
@@ -14,9 +14,9 @@ import java.util.UUID;
 public class BugComment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id", updatable = false, nullable = false)
-    private UUID commentId;
+    private Long commentId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bug_id", nullable = false)
@@ -35,7 +35,7 @@ public class BugComment {
 
     public BugComment() {}
 
-    public BugComment(UUID commentId, Bug bug, User user, String content, Instant createdAt) {
+    public BugComment(Long commentId, Bug bug, User user, String content, Instant createdAt) {
         this.commentId = commentId;
         this.bug = bug;
         this.user = user;
@@ -48,13 +48,13 @@ public class BugComment {
     }
 
     public static class BugCommentBuilder {
-        private UUID commentId;
+        private Long commentId;
         private Bug bug;
         private User user;
         private String content;
         private Instant createdAt;
 
-        public BugCommentBuilder commentId(UUID commentId) { this.commentId = commentId; return this; }
+        public BugCommentBuilder commentId(Long commentId) { this.commentId = commentId; return this; }
         public BugCommentBuilder bug(Bug bug) { this.bug = bug; return this; }
         public BugCommentBuilder user(User user) { this.user = user; return this; }
         public BugCommentBuilder content(String content) { this.content = content; return this; }
@@ -65,8 +65,8 @@ public class BugComment {
         }
     }
 
-    public UUID getCommentId() { return commentId; }
-    public void setCommentId(UUID commentId) { this.commentId = commentId; }
+    public Long getCommentId() { return commentId; }
+    public void setCommentId(Long commentId) { this.commentId = commentId; }
     public Bug getBug() { return bug; }
     public void setBug(Bug bug) { this.bug = bug; }
     public User getUser() { return user; }

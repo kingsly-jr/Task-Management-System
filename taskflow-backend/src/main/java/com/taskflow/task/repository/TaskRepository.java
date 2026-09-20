@@ -7,36 +7,36 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.UUID;
+
 
 @Repository
-public interface TaskRepository extends JpaRepository<Task, UUID> {
+public interface TaskRepository extends JpaRepository<Task, Long> {
 
-    List<Task> findByProject_ProjectIdAndIsDeletedFalseOrderByCreatedAtDesc(UUID projectId);
+    List<Task> findByProject_ProjectIdAndIsDeletedFalseOrderByCreatedAtDesc(Long projectId);
 
-    List<Task> findByProject_ProjectIdAndStatusAndIsDeletedFalse(UUID projectId, String status);
+    List<Task> findByProject_ProjectIdAndStatusAndIsDeletedFalse(Long projectId, String status);
 
     @Query("SELECT DISTINCT t FROM Task t JOIN t.assignees a WHERE a.userId = :userId AND t.isDeleted = false ORDER BY t.dueDate ASC NULLS LAST")
-    List<Task> findByAssigneeUserId(@Param("userId") UUID userId);
+    List<Task> findByAssigneeUserId(@Param("userId") Long userId);
 
     @Query("SELECT DISTINCT t FROM Task t JOIN t.assignees a WHERE a.userId = :userId AND t.status = :status AND t.isDeleted = false")
-    List<Task> findByAssigneeUserIdAndStatus(@Param("userId") UUID userId, @Param("status") String status);
+    List<Task> findByAssigneeUserIdAndStatus(@Param("userId") Long userId, @Param("status") String status);
 
     boolean existsByTaskCodeIgnoreCaseAndIsDeletedFalse(String taskCode);
 
-    long countByProject_ProjectIdAndIsDeletedFalse(UUID projectId);
+    long countByProject_ProjectIdAndIsDeletedFalse(Long projectId);
 
-    long countByProject_ProjectIdAndStatusAndIsDeletedFalse(UUID projectId, String status);
+    long countByProject_ProjectIdAndStatusAndIsDeletedFalse(Long projectId, String status);
 
     @Query("SELECT COUNT(DISTINCT t) FROM Task t JOIN t.assignees a WHERE a.userId = :userId AND t.isDeleted = false")
-    long countByAssigneeUserId(@Param("userId") UUID userId);
+    long countByAssigneeUserId(@Param("userId") Long userId);
 
     @Query("SELECT COUNT(DISTINCT t) FROM Task t JOIN t.assignees a WHERE a.userId = :userId AND t.status = :status AND t.isDeleted = false")
-    long countByAssigneeUserIdAndStatus(@Param("userId") UUID userId, @Param("status") String status);
+    long countByAssigneeUserIdAndStatus(@Param("userId") Long userId, @Param("status") String status);
 
-    long countByMilestone_MilestoneIdAndIsDeletedFalse(UUID milestoneId);
+    long countByMilestone_MilestoneIdAndIsDeletedFalse(Long milestoneId);
 
-    long countByMilestone_MilestoneIdAndStatusAndIsDeletedFalse(UUID milestoneId, String status);
+    long countByMilestone_MilestoneIdAndStatusAndIsDeletedFalse(Long milestoneId, String status);
 
-    List<Task> findByMilestone_MilestoneIdAndIsDeletedFalseOrderByCreatedAtAsc(UUID milestoneId);
+    List<Task> findByMilestone_MilestoneIdAndIsDeletedFalseOrderByCreatedAtAsc(Long milestoneId);
 }

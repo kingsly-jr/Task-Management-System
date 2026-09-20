@@ -12,7 +12,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/projects/{projectId}/messages")
@@ -29,7 +28,7 @@ public class MessageController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'CLIENT')")
     @Operation(summary = "Post a message to a project channel")
     public ResponseEntity<ApiResponse<MessageDto.MessageResponse>> sendMessage(
-            @PathVariable UUID projectId,
+            @PathVariable Long projectId,
             @Valid @RequestBody MessageDto.SendMessageRequest request) {
 
         MessageDto.MessageResponse response = messageService.sendMessage(projectId, request);
@@ -41,7 +40,7 @@ public class MessageController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'CLIENT')")
     @Operation(summary = "Get messages for a project channel with client confidentiality filtering")
     public ResponseEntity<ApiResponse<List<MessageDto.MessageResponse>>> getMessages(
-            @PathVariable UUID projectId,
+            @PathVariable Long projectId,
             @RequestParam(required = false, defaultValue = "GENERAL") String channel) {
 
         List<MessageDto.MessageResponse> list = messageService.getMessages(projectId, channel);

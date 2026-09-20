@@ -12,7 +12,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -29,7 +28,7 @@ public class MilestoneController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
     @Operation(summary = "Create project milestone (Admin or assigned PM)")
     public ResponseEntity<ApiResponse<MilestoneDto.MilestoneResponse>> createMilestone(
-            @PathVariable UUID projectId,
+            @PathVariable Long projectId,
             @Valid @RequestBody MilestoneDto.CreateMilestoneRequest request) {
         MilestoneDto.MilestoneResponse response = milestoneService.createMilestone(projectId, request);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -40,7 +39,7 @@ public class MilestoneController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'CLIENT')")
     @Operation(summary = "Get all milestones for a project with task completion progress")
     public ResponseEntity<ApiResponse<List<MilestoneDto.MilestoneResponse>>> getMilestonesForProject(
-            @PathVariable UUID projectId) {
+            @PathVariable Long projectId) {
         List<MilestoneDto.MilestoneResponse> response = milestoneService.getMilestonesForProject(projectId);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
@@ -49,7 +48,7 @@ public class MilestoneController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'CLIENT')")
     @Operation(summary = "Get milestone stats (total, completed, in progress, delayed)")
     public ResponseEntity<ApiResponse<MilestoneDto.MilestoneStatsResponse>> getMilestoneStats(
-            @PathVariable UUID projectId) {
+            @PathVariable Long projectId) {
         MilestoneDto.MilestoneStatsResponse response = milestoneService.getMilestoneStats(projectId);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
@@ -58,7 +57,7 @@ public class MilestoneController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'CLIENT')")
     @Operation(summary = "Get milestone details by ID")
     public ResponseEntity<ApiResponse<MilestoneDto.MilestoneResponse>> getMilestoneById(
-            @PathVariable UUID id) {
+            @PathVariable Long id) {
         MilestoneDto.MilestoneResponse response = milestoneService.getMilestoneById(id);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
@@ -67,7 +66,7 @@ public class MilestoneController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
     @Operation(summary = "Update milestone details and status")
     public ResponseEntity<ApiResponse<MilestoneDto.MilestoneResponse>> updateMilestone(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @Valid @RequestBody MilestoneDto.UpdateMilestoneRequest request) {
         MilestoneDto.MilestoneResponse response = milestoneService.updateMilestone(id, request);
         return ResponseEntity.ok(ApiResponse.ok("Milestone updated successfully", response));
@@ -76,7 +75,7 @@ public class MilestoneController {
     @DeleteMapping("/milestones/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
     @Operation(summary = "Delete milestone")
-    public ResponseEntity<ApiResponse<Void>> deleteMilestone(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<Void>> deleteMilestone(@PathVariable Long id) {
         milestoneService.deleteMilestone(id);
         return ResponseEntity.ok(ApiResponse.ok("Milestone deleted successfully", null));
     }

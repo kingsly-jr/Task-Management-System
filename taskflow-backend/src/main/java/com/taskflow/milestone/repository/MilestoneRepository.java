@@ -5,14 +5,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.UUID;
+
 
 @Repository
-public interface MilestoneRepository extends JpaRepository<Milestone, UUID> {
+public interface MilestoneRepository extends JpaRepository<Milestone, Long> {
 
-    List<Milestone> findByProject_ProjectIdAndIsDeletedFalseOrderByOrderIndexAscTargetDateAsc(UUID projectId);
+    List<Milestone> findByProject_ProjectIdAndIsDeletedFalseOrderByOrderIndexAscTargetDateAsc(Long projectId);
 
-    long countByProject_ProjectIdAndIsDeletedFalse(UUID projectId);
+    long countByProject_ProjectIdAndIsDeletedFalse(Long projectId);
 
-    long countByProject_ProjectIdAndStatusAndIsDeletedFalse(UUID projectId, String status);
+    long countByProject_ProjectIdAndStatusAndIsDeletedFalse(Long projectId, String status);
 }

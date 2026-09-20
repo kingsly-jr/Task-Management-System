@@ -1,5 +1,6 @@
 package com.taskflow.auth.service;
 
+import com.taskflow.audit.service.AuditLogService;
 import com.taskflow.auth.dto.*;
 import com.taskflow.common.exception.BadRequestException;
 import com.taskflow.common.exception.ResourceNotFoundException;
@@ -30,15 +31,18 @@ public class AuthService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final AuditLogService auditLogService;
 
     public AuthService(AuthenticationManager authenticationManager,
                        UserRepository userRepository,
                        JwtService jwtService,
-                       PasswordEncoder passwordEncoder) {
+                       PasswordEncoder passwordEncoder,
+                       AuditLogService auditLogService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
+        this.auditLogService = auditLogService;
     }
 
     public LoginResponse login(LoginRequest request) {
@@ -54,10 +58,22 @@ public class AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (!"ACTIVE".equalsIgnoreCase(user.getStatus()) || user.isDeleted()) {
+            auditLogService.log(
+                    user.getEmail(), user.getRole().getRoleCode(), "AUTH", "LOGIN",
+                    "User", user.getUserId().toString(),
+                    "Failed login attempt: Account deactivated", "127.0.0.1", "FAILED", null
+            );
             throw new UnauthorizedException("Your account is deactivated. Please contact an administrator.");
         }
 
         log.info("User {} authenticated successfully", user.getEmail());
+
+        auditLogService.log(
+                user.getEmail(), user.getRole().getRoleCode(), "AUTH", "LOGIN",
+                "User", user.getUserId().toString(),
+                "User authenticated and established session successfully", "127.0.0.1", "SUCCESS",
+                "{\"portalRole\":\"" + user.getRole().getRoleCode() + "\"}"
+        );
 
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("userId", user.getUserId().toString());
@@ -117,6 +133,9 @@ public class AuthService {
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("userId", user.getUserId().toString());
         extraClaims.put("role", user.getRole().getRoleCode());
+        if (user.getRoleCategory() != null) {
+            extraClaims.put("roleCategory", user.getRoleCategory().getRoleCategoryCode());
+        }
 
         String newAccessToken = jwtService.generateToken(principal, extraClaims);
 
@@ -149,12 +168,23 @@ public class AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
+            auditLogService.log(
+                    user.getEmail(), user.getRole().getRoleCode(), "AUTH", "PASSWORD_CHANGE",
+                    "User", user.getUserId().toString(),
+                    "Password change rejected: Incorrect current password provided", "127.0.0.1", "WARNING", null
+            );
             throw new BadRequestException("Current password does not match");
         }
 
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         user.setFirstLogin(false);
         userRepository.save(user);
+
+        auditLogService.log(
+                user.getEmail(), user.getRole().getRoleCode(), "AUTH", "PASSWORD_CHANGE",
+                "User", user.getUserId().toString(),
+                "Password updated successfully", "127.0.0.1", "SUCCESS", null
+        );
     }
 
     @Transactional
@@ -175,6 +205,12 @@ public class AuthService {
         user.setPasswordHash(passwordEncoder.encode(newPassword.trim()));
         user.setFirstLogin(false);
         userRepository.save(user);
+
+        auditLogService.log(
+                user.getEmail(), user.getRole().getRoleCode(), "AUTH", "FIRST_LOGIN_RESET",
+                "User", user.getUserId().toString(),
+                "First login password reset completed. Account fully activated.", "127.0.0.1", "SUCCESS", null
+        );
     }
 
     public UserSummaryDto mapToSummary(User user) {

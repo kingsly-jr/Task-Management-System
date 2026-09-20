@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 
 import java.time.Instant;
-import java.util.UUID;
 
 public class MessageDto {
 
@@ -47,8 +46,8 @@ public class MessageDto {
     }
 
     public static class MessageResponse {
-        private UUID messageId;
-        private UUID projectId;
+        private Long messageId;
+        private Long projectId;
         private String projectCode;
         private String channel;
         private String content;
@@ -56,15 +55,15 @@ public class MessageDto {
         @JsonProperty("isClientVisible")
         private boolean isClientVisible;
 
-        private UUID senderId;
+        private Long senderId;
         private String senderName;
         private String senderRole;
         private Instant createdAt;
 
         public MessageResponse() {}
 
-        public MessageResponse(UUID messageId, UUID projectId, String projectCode, String channel,
-                               String content, boolean isClientVisible, UUID senderId,
+        public MessageResponse(Long messageId, Long projectId, String projectCode, String channel,
+                               String content, boolean isClientVisible, Long senderId,
                                String senderName, String senderRole, Instant createdAt) {
             this.messageId = messageId;
             this.projectId = projectId;
@@ -78,10 +77,10 @@ public class MessageDto {
             this.createdAt = createdAt;
         }
 
-        public UUID getMessageId() { return messageId; }
-        public void setMessageId(UUID messageId) { this.messageId = messageId; }
-        public UUID getProjectId() { return projectId; }
-        public void setProjectId(UUID projectId) { this.projectId = projectId; }
+        public Long getMessageId() { return messageId; }
+        public void setMessageId(Long messageId) { this.messageId = messageId; }
+        public Long getProjectId() { return projectId; }
+        public void setProjectId(Long projectId) { this.projectId = projectId; }
         public String getProjectCode() { return projectCode; }
         public void setProjectCode(String projectCode) { this.projectCode = projectCode; }
         public String getChannel() { return channel; }
@@ -95,8 +94,8 @@ public class MessageDto {
         @JsonProperty("isClientVisible")
         public void setClientVisible(boolean clientVisible) { this.isClientVisible = clientVisible; }
 
-        public UUID getSenderId() { return senderId; }
-        public void setSenderId(UUID senderId) { this.senderId = senderId; }
+        public Long getSenderId() { return senderId; }
+        public void setSenderId(Long senderId) { this.senderId = senderId; }
         public String getSenderName() { return senderName; }
         public void setSenderName(String senderName) { this.senderName = senderName; }
         public String getSenderRole() { return senderRole; }

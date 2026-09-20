@@ -36,6 +36,8 @@ import MemberDocumentsPage from './pages/member/MemberDocumentsPage';
 import MemberTimesheetsPage from './pages/member/MemberTimesheetsPage';
 import ManagerTimesheetsPage from './pages/manager/ManagerTimesheetsPage';
 import AdminReportsPage from './pages/admin/AdminReportsPage';
+import AuditLogsPage from './pages/admin/AuditLogsPage';
+import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 import ClientDashboard from './pages/client/ClientDashboard';
 import ClientProjectsPage from './pages/client/ClientProjectsPage';
 import ClientChangeRequestsPage from './pages/client/ClientChangeRequestsPage';
@@ -52,6 +54,7 @@ function App() {
           {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/login/:roleSlug" element={<LoginPage />} />
 
           {/* Admin Portal Routes */}
           <Route
@@ -69,6 +72,8 @@ function App() {
             <Route path="clients" element={<ClientsPage />} />
             <Route path="projects" element={<AdminProjectsPage />} />
             <Route path="reports" element={<AdminReportsPage />} />
+            <Route path="audit" element={<AuditLogsPage />} />
+            <Route path="settings" element={<AdminSettingsPage />} />
             <Route path="*" element={<AdminDashboard />} />
           </Route>
 

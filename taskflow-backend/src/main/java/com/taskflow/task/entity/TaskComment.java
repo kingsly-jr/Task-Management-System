@@ -6,7 +6,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
-import java.util.UUID;
+
 
 @Entity
 @Table(name = "task_comments")
@@ -14,9 +14,9 @@ import java.util.UUID;
 public class TaskComment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id", updatable = false, nullable = false)
-    private UUID commentId;
+    private Long commentId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id", nullable = false)
@@ -35,7 +35,7 @@ public class TaskComment {
 
     public TaskComment() {}
 
-    public TaskComment(UUID commentId, Task task, User user, String content, Instant createdAt) {
+    public TaskComment(Long commentId, Task task, User user, String content, Instant createdAt) {
         this.commentId = commentId;
         this.task = task;
         this.user = user;
@@ -48,13 +48,13 @@ public class TaskComment {
     }
 
     public static class TaskCommentBuilder {
-        private UUID commentId;
+        private Long commentId;
         private Task task;
         private User user;
         private String content;
         private Instant createdAt;
 
-        public TaskCommentBuilder commentId(UUID commentId) { this.commentId = commentId; return this; }
+        public TaskCommentBuilder commentId(Long commentId) { this.commentId = commentId; return this; }
         public TaskCommentBuilder task(Task task) { this.task = task; return this; }
         public TaskCommentBuilder user(User user) { this.user = user; return this; }
         public TaskCommentBuilder content(String content) { this.content = content; return this; }
@@ -65,8 +65,8 @@ public class TaskComment {
         }
     }
 
-    public UUID getCommentId() { return commentId; }
-    public void setCommentId(UUID commentId) { this.commentId = commentId; }
+    public Long getCommentId() { return commentId; }
+    public void setCommentId(Long commentId) { this.commentId = commentId; }
     public Task getTask() { return task; }
     public void setTask(Task task) { this.task = task; }
     public User getUser() { return user; }

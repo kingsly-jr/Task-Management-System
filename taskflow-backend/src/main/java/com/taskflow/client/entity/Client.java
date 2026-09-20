@@ -7,7 +7,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
-import java.util.UUID;
+
 
 @Entity
 @Table(name = "clients")
@@ -15,9 +15,9 @@ import java.util.UUID;
 public class Client {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "client_id", updatable = false, nullable = false)
-    private UUID clientId;
+    private Long clientId;
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
@@ -60,7 +60,7 @@ public class Client {
 
     public Client() {}
 
-    public Client(UUID clientId, User user, String companyName, String contactPerson, String email,
+    public Client(Long clientId, User user, String companyName, String contactPerson, String email,
                   String phone, String address, String country, String status,
                   boolean isDeleted, Instant deletedAt, Instant createdAt, Instant updatedAt) {
         this.clientId = clientId;
@@ -83,7 +83,7 @@ public class Client {
     }
 
     public static class ClientBuilder {
-        private UUID clientId;
+        private Long clientId;
         private User user;
         private String companyName;
         private String contactPerson;
@@ -97,7 +97,7 @@ public class Client {
         private Instant createdAt;
         private Instant updatedAt;
 
-        public ClientBuilder clientId(UUID clientId) { this.clientId = clientId; return this; }
+        public ClientBuilder clientId(Long clientId) { this.clientId = clientId; return this; }
         public ClientBuilder user(User user) { this.user = user; return this; }
         public ClientBuilder companyName(String companyName) { this.companyName = companyName; return this; }
         public ClientBuilder contactPerson(String contactPerson) { this.contactPerson = contactPerson; return this; }
@@ -116,8 +116,8 @@ public class Client {
         }
     }
 
-    public UUID getClientId() { return clientId; }
-    public void setClientId(UUID clientId) { this.clientId = clientId; }
+    public Long getClientId() { return clientId; }
+    public void setClientId(Long clientId) { this.clientId = clientId; }
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
     public String getCompanyName() { return companyName; }

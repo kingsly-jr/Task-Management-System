@@ -9,7 +9,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
-import java.util.UUID;
+
 
 @Entity
 @Table(name = "bugs")
@@ -17,9 +17,9 @@ import java.util.UUID;
 public class Bug {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "bug_id", updatable = false, nullable = false)
-    private UUID bugId;
+    private Long bugId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id", nullable = false)
@@ -89,7 +89,7 @@ public class Bug {
 
     public Bug() {}
 
-    public Bug(UUID bugId, Project project, Task task, String bugCode, String title, String description,
+    public Bug(Long bugId, Project project, Task task, String bugCode, String title, String description,
                String stepsToReproduce, String expectedBehavior, String actualBehavior, String severity,
                String priority, String status, String environment, User reportedBy, User assignedTo,
                String resolutionNotes, String retestNotes, boolean isDeleted, Instant deletedAt,
@@ -122,7 +122,7 @@ public class Bug {
     }
 
     public static class BugBuilder {
-        private UUID bugId;
+        private Long bugId;
         private Project project;
         private Task task;
         private String bugCode;
@@ -144,7 +144,7 @@ public class Bug {
         private Instant createdAt;
         private Instant updatedAt;
 
-        public BugBuilder bugId(UUID bugId) { this.bugId = bugId; return this; }
+        public BugBuilder bugId(Long bugId) { this.bugId = bugId; return this; }
         public BugBuilder project(Project project) { this.project = project; return this; }
         public BugBuilder task(Task task) { this.task = task; return this; }
         public BugBuilder bugCode(String bugCode) { this.bugCode = bugCode; return this; }
@@ -174,8 +174,8 @@ public class Bug {
         }
     }
 
-    public UUID getBugId() { return bugId; }
-    public void setBugId(UUID bugId) { this.bugId = bugId; }
+    public Long getBugId() { return bugId; }
+    public void setBugId(Long bugId) { this.bugId = bugId; }
     public Project getProject() { return project; }
     public void setProject(Project project) { this.project = project; }
     public Task getTask() { return task; }

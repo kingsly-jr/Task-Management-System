@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Size;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.UUID;
 
 public class MilestoneDto {
 
@@ -64,8 +63,8 @@ public class MilestoneDto {
     }
 
     public static class MilestoneResponse {
-        private UUID milestoneId;
-        private UUID projectId;
+        private Long milestoneId;
+        private Long projectId;
         private String projectCode;
         private String projectName;
         private String title;
@@ -82,7 +81,7 @@ public class MilestoneDto {
 
         public MilestoneResponse() {}
 
-        public MilestoneResponse(UUID milestoneId, UUID projectId, String projectCode, String projectName,
+        public MilestoneResponse(Long milestoneId, Long projectId, String projectCode, String projectName,
                                  String title, String description, LocalDate targetDate,
                                  LocalDate actualCompletionDate, String status, int orderIndex,
                                  long totalTasks, long completedTasks, int progressPercentage,
@@ -104,10 +103,10 @@ public class MilestoneDto {
             this.updatedAt = updatedAt;
         }
 
-        public UUID getMilestoneId() { return milestoneId; }
-        public void setMilestoneId(UUID milestoneId) { this.milestoneId = milestoneId; }
-        public UUID getProjectId() { return projectId; }
-        public void setProjectId(UUID projectId) { this.projectId = projectId; }
+        public Long getMilestoneId() { return milestoneId; }
+        public void setMilestoneId(Long milestoneId) { this.milestoneId = milestoneId; }
+        public Long getProjectId() { return projectId; }
+        public void setProjectId(Long projectId) { this.projectId = projectId; }
         public String getProjectCode() { return projectCode; }
         public void setProjectCode(String projectCode) { this.projectCode = projectCode; }
         public String getProjectName() { return projectName; }

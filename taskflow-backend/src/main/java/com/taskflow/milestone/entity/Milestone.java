@@ -11,7 +11,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+
 
 @Entity
 @Table(name = "milestones")
@@ -19,9 +19,9 @@ import java.util.UUID;
 public class Milestone {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "milestone_id", updatable = false, nullable = false)
-    private UUID milestoneId;
+    private Long milestoneId;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "project_id", nullable = false)
@@ -64,7 +64,7 @@ public class Milestone {
 
     public Milestone() {}
 
-    public Milestone(UUID milestoneId, Project project, String title, String description,
+    public Milestone(Long milestoneId, Project project, String title, String description,
                      LocalDate targetDate, LocalDate actualCompletionDate, String status,
                      int orderIndex, List<Task> tasks, boolean isDeleted, Instant deletedAt,
                      Instant createdAt, Instant updatedAt) {
@@ -88,7 +88,7 @@ public class Milestone {
     }
 
     public static class MilestoneBuilder {
-        private UUID milestoneId;
+        private Long milestoneId;
         private Project project;
         private String title;
         private String description;
@@ -102,7 +102,7 @@ public class Milestone {
         private Instant createdAt;
         private Instant updatedAt;
 
-        public MilestoneBuilder milestoneId(UUID milestoneId) { this.milestoneId = milestoneId; return this; }
+        public MilestoneBuilder milestoneId(Long milestoneId) { this.milestoneId = milestoneId; return this; }
         public MilestoneBuilder project(Project project) { this.project = project; return this; }
         public MilestoneBuilder title(String title) { this.title = title; return this; }
         public MilestoneBuilder description(String description) { this.description = description; return this; }
@@ -122,8 +122,8 @@ public class Milestone {
         }
     }
 
-    public UUID getMilestoneId() { return milestoneId; }
-    public void setMilestoneId(UUID milestoneId) { this.milestoneId = milestoneId; }
+    public Long getMilestoneId() { return milestoneId; }
+    public void setMilestoneId(Long milestoneId) { this.milestoneId = milestoneId; }
     public Project getProject() { return project; }
     public void setProject(Project project) { this.project = project; }
     public String getTitle() { return title; }

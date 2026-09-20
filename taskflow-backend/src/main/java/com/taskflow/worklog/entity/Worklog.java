@@ -11,7 +11,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.UUID;
+
 
 @Entity
 @Table(name = "worklogs")
@@ -19,9 +19,9 @@ import java.util.UUID;
 public class Worklog {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "worklog_id", updatable = false, nullable = false)
-    private UUID worklogId;
+    private Long worklogId;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "project_id", nullable = false)
@@ -77,8 +77,8 @@ public class Worklog {
         return new Builder();
     }
 
-    public UUID getWorklogId() { return worklogId; }
-    public void setWorklogId(UUID worklogId) { this.worklogId = worklogId; }
+    public Long getWorklogId() { return worklogId; }
+    public void setWorklogId(Long worklogId) { this.worklogId = worklogId; }
 
     public Project getProject() { return project; }
     public void setProject(Project project) { this.project = project; }

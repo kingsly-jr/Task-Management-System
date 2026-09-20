@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -34,14 +33,14 @@ public class WorklogController {
 
     @PutMapping("/worklogs/{id}")
     public ResponseEntity<ApiResponse<WorklogDto.WorklogResponse>> updateWorklog(
-            @PathVariable("id") UUID worklogId,
+            @PathVariable("id") Long worklogId,
             @RequestBody WorklogDto.UpdateWorklogRequest request) {
         WorklogDto.WorklogResponse res = worklogService.updateWorklog(worklogId, request);
         return ResponseEntity.ok(ApiResponse.ok("Worklog updated successfully", res));
     }
 
     @DeleteMapping("/worklogs/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteWorklog(@PathVariable("id") UUID worklogId) {
+    public ResponseEntity<ApiResponse<Void>> deleteWorklog(@PathVariable("id") Long worklogId) {
         worklogService.deleteWorklog(worklogId);
         return ResponseEntity.ok(ApiResponse.ok("Worklog deleted successfully", null));
     }
@@ -63,9 +62,9 @@ public class WorklogController {
     @GetMapping("/projects/{projectId}/worklogs")
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
     public ResponseEntity<ApiResponse<List<WorklogDto.WorklogResponse>>> getProjectWorklogs(
-            @PathVariable("projectId") UUID projectId,
+            @PathVariable("projectId") Long projectId,
             @RequestParam(name = "status", required = false) String status,
-            @RequestParam(name = "userId", required = false) UUID userId) {
+            @RequestParam(name = "userId", required = false) Long userId) {
         List<WorklogDto.WorklogResponse> list = worklogService.getProjectWorklogs(projectId, status, userId);
         return ResponseEntity.ok(ApiResponse.ok(list));
     }
@@ -73,7 +72,7 @@ public class WorklogController {
     @PatchMapping("/worklogs/{id}/review")
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
     public ResponseEntity<ApiResponse<WorklogDto.WorklogResponse>> reviewWorklog(
-            @PathVariable("id") UUID worklogId,
+            @PathVariable("id") Long worklogId,
             @Valid @RequestBody WorklogDto.ReviewWorklogRequest request) {
         WorklogDto.WorklogResponse res = worklogService.reviewWorklog(worklogId, request);
         return ResponseEntity.ok(ApiResponse.ok("Timesheet entry reviewed successfully", res));

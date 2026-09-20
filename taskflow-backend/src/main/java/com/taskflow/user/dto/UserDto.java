@@ -7,7 +7,6 @@ import jakarta.validation.constraints.Size;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 public class UserDto {
 
@@ -140,7 +139,7 @@ public class UserDto {
     }
 
     public static class UserResponse {
-        private UUID userId;
+        private Long userId;
         private String email;
         private String firstName;
         private String lastName;
@@ -157,7 +156,7 @@ public class UserDto {
 
         public UserResponse() {}
 
-        public UserResponse(UUID userId, String email, String firstName, String lastName,
+        public UserResponse(Long userId, String email, String firstName, String lastName,
                             String fullName, String phone, String role, Long roleCategoryId,
                             String roleCategoryName, String roleCategoryCode, String status,
                             boolean isFirstLogin, Instant createdAt, Instant updatedAt) {
@@ -177,8 +176,8 @@ public class UserDto {
             this.updatedAt = updatedAt;
         }
 
-        public UUID getUserId() { return userId; }
-        public void setUserId(UUID userId) { this.userId = userId; }
+        public Long getUserId() { return userId; }
+        public void setUserId(Long userId) { this.userId = userId; }
         public String getEmail() { return email; }
         public void setEmail(String email) { this.email = email; }
         public String getFirstName() { return firstName; }

@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -110,7 +109,7 @@ public class ProjectService {
     public List<ProjectDto.ProjectResponse> getProjects(String search, String status, String priority) {
         UserPrincipal currentUser = getCurrentUserPrincipal();
         String role = currentUser.getRoleCode();
-        UUID userId = currentUser.getId();
+        Long userId = currentUser.getId();
 
         List<Project> list;
 
@@ -148,7 +147,7 @@ public class ProjectService {
     }
 
     @Transactional(readOnly = true)
-    public ProjectDto.ProjectResponse getProjectById(UUID id) {
+    public ProjectDto.ProjectResponse getProjectById(Long id) {
         Project project = projectRepository.findById(id)
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + id));
@@ -160,7 +159,7 @@ public class ProjectService {
     }
 
     @Transactional
-    public ProjectDto.ProjectResponse updateProject(UUID id, ProjectDto.UpdateProjectRequest request) {
+    public ProjectDto.ProjectResponse updateProject(Long id, ProjectDto.UpdateProjectRequest request) {
         Project project = projectRepository.findById(id)
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + id));
@@ -201,7 +200,7 @@ public class ProjectService {
     }
 
     @Transactional
-    public void softDeleteProject(UUID id) {
+    public void softDeleteProject(Long id) {
         Project project = projectRepository.findById(id)
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + id));
@@ -216,7 +215,7 @@ public class ProjectService {
     public ProjectDto.ProjectStatsResponse getProjectStats() {
         UserPrincipal currentUser = getCurrentUserPrincipal();
         String role = currentUser.getRoleCode();
-        UUID userId = currentUser.getId();
+        Long userId = currentUser.getId();
 
         if ("ADMIN".equalsIgnoreCase(role)) {
             long total = projectRepository.countByIsDeletedFalse();
@@ -238,7 +237,7 @@ public class ProjectService {
 
     private void verifyProjectAccess(Project project, UserPrincipal currentUser) {
         String role = currentUser.getRoleCode();
-        UUID userId = currentUser.getId();
+        Long userId = currentUser.getId();
 
         if ("ADMIN".equalsIgnoreCase(role)) return;
 

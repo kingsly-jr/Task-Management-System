@@ -13,7 +13,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
+
 
 @Entity
 @Table(name = "tasks")
@@ -21,9 +21,9 @@ import java.util.UUID;
 public class Task {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "task_id", updatable = false, nullable = false)
-    private UUID taskId;
+    private Long taskId;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "project_id", nullable = false)
@@ -88,7 +88,7 @@ public class Task {
 
     public Task() {}
 
-    public Task(UUID taskId, Project project, Milestone milestone, String taskCode, String title, String description,
+    public Task(Long taskId, Project project, Milestone milestone, String taskCode, String title, String description,
                 String status, String priority, BigDecimal estimatedHours, BigDecimal loggedHours,
                 LocalDate startDate, LocalDate dueDate, User createdBy, Set<User> assignees,
                 boolean isDeleted, Instant deletedAt, Instant createdAt, Instant updatedAt) {
@@ -117,7 +117,7 @@ public class Task {
     }
 
     public static class TaskBuilder {
-        private UUID taskId;
+        private Long taskId;
         private Project project;
         private Milestone milestone;
         private String taskCode;
@@ -136,7 +136,7 @@ public class Task {
         private Instant createdAt;
         private Instant updatedAt;
 
-        public TaskBuilder taskId(UUID taskId) { this.taskId = taskId; return this; }
+        public TaskBuilder taskId(Long taskId) { this.taskId = taskId; return this; }
         public TaskBuilder project(Project project) { this.project = project; return this; }
         public TaskBuilder milestone(Milestone milestone) { this.milestone = milestone; return this; }
         public TaskBuilder taskCode(String taskCode) { this.taskCode = taskCode; return this; }
@@ -162,8 +162,8 @@ public class Task {
         }
     }
 
-    public UUID getTaskId() { return taskId; }
-    public void setTaskId(UUID taskId) { this.taskId = taskId; }
+    public Long getTaskId() { return taskId; }
+    public void setTaskId(Long taskId) { this.taskId = taskId; }
     public Project getProject() { return project; }
     public void setProject(Project project) { this.project = project; }
     public Milestone getMilestone() { return milestone; }

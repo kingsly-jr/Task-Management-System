@@ -7,7 +7,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class ChangeRequestDto {
 
@@ -79,14 +78,14 @@ public class ChangeRequestDto {
     }
 
     public static class CommentResponse {
-        private UUID commentId;
-        private UUID userId;
+        private Long commentId;
+        private Long userId;
         private String authorName;
         private String content;
         private Instant createdAt;
 
         public CommentResponse() {}
-        public CommentResponse(UUID commentId, UUID userId, String authorName, String content, Instant createdAt) {
+        public CommentResponse(Long commentId, Long userId, String authorName, String content, Instant createdAt) {
             this.commentId = commentId;
             this.userId = userId;
             this.authorName = authorName;
@@ -94,10 +93,10 @@ public class ChangeRequestDto {
             this.createdAt = createdAt;
         }
 
-        public UUID getCommentId() { return commentId; }
-        public void setCommentId(UUID commentId) { this.commentId = commentId; }
-        public UUID getUserId() { return userId; }
-        public void setUserId(UUID userId) { this.userId = userId; }
+        public Long getCommentId() { return commentId; }
+        public void setCommentId(Long commentId) { this.commentId = commentId; }
+        public Long getUserId() { return userId; }
+        public void setUserId(Long userId) { this.userId = userId; }
         public String getAuthorName() { return authorName; }
         public void setAuthorName(String authorName) { this.authorName = authorName; }
         public String getContent() { return content; }
@@ -107,8 +106,8 @@ public class ChangeRequestDto {
     }
 
     public static class ChangeRequestResponse {
-        private UUID changeRequestId;
-        private UUID projectId;
+        private Long changeRequestId;
+        private Long projectId;
         private String projectCode;
         private String projectName;
         private String changeRequestCode;
@@ -119,10 +118,10 @@ public class ChangeRequestDto {
         private Integer scheduleImpactDays;
         private String priority;
         private String status;
-        private UUID requestedById;
+        private Long requestedById;
         private String requestedByName;
         private String requestedByEmail;
-        private UUID reviewedById;
+        private Long reviewedById;
         private String reviewedByName;
         private String reviewedByEmail;
         private String reviewNotes;
@@ -133,12 +132,12 @@ public class ChangeRequestDto {
 
         public ChangeRequestResponse() {}
 
-        public ChangeRequestResponse(UUID changeRequestId, UUID projectId, String projectCode,
+        public ChangeRequestResponse(Long changeRequestId, Long projectId, String projectCode,
                                      String projectName, String changeRequestCode, String title,
                                      String description, String reasonForChange, BigDecimal estimatedCost,
                                      Integer scheduleImpactDays, String priority, String status,
-                                     UUID requestedById, String requestedByName, String requestedByEmail,
-                                     UUID reviewedById, String reviewedByName, String reviewedByEmail,
+                                     Long requestedById, String requestedByName, String requestedByEmail,
+                                     Long reviewedById, String reviewedByName, String reviewedByEmail,
                                      String reviewNotes, Instant reviewedAt, long commentsCount,
                                      Instant createdAt, Instant updatedAt) {
             this.changeRequestId = changeRequestId;
@@ -166,10 +165,10 @@ public class ChangeRequestDto {
             this.updatedAt = updatedAt;
         }
 
-        public UUID getChangeRequestId() { return changeRequestId; }
-        public void setChangeRequestId(UUID changeRequestId) { this.changeRequestId = changeRequestId; }
-        public UUID getProjectId() { return projectId; }
-        public void setProjectId(UUID projectId) { this.projectId = projectId; }
+        public Long getChangeRequestId() { return changeRequestId; }
+        public void setChangeRequestId(Long changeRequestId) { this.changeRequestId = changeRequestId; }
+        public Long getProjectId() { return projectId; }
+        public void setProjectId(Long projectId) { this.projectId = projectId; }
         public String getProjectCode() { return projectCode; }
         public void setProjectCode(String projectCode) { this.projectCode = projectCode; }
         public String getProjectName() { return projectName; }
@@ -190,14 +189,14 @@ public class ChangeRequestDto {
         public void setPriority(String priority) { this.priority = priority; }
         public String getStatus() { return status; }
         public void setStatus(String status) { this.status = status; }
-        public UUID getRequestedById() { return requestedById; }
-        public void setRequestedById(UUID requestedById) { this.requestedById = requestedById; }
+        public Long getRequestedById() { return requestedById; }
+        public void setRequestedById(Long requestedById) { this.requestedById = requestedById; }
         public String getRequestedByName() { return requestedByName; }
         public void setRequestedByName(String requestedByName) { this.requestedByName = requestedByName; }
         public String getRequestedByEmail() { return requestedByEmail; }
         public void setRequestedByEmail(String requestedByEmail) { this.requestedByEmail = requestedByEmail; }
-        public UUID getReviewedById() { return reviewedById; }
-        public void setReviewedById(UUID reviewedById) { this.reviewedById = reviewedById; }
+        public Long getReviewedById() { return reviewedById; }
+        public void setReviewedById(Long reviewedById) { this.reviewedById = reviewedById; }
         public String getReviewedByName() { return reviewedByName; }
         public void setReviewedByName(String reviewedByName) { this.reviewedByName = reviewedByName; }
         public String getReviewedByEmail() { return reviewedByEmail; }

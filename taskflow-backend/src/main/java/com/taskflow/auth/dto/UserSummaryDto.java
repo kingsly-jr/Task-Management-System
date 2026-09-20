@@ -1,9 +1,8 @@
 package com.taskflow.auth.dto;
 
-import java.util.UUID;
 
 public class UserSummaryDto {
-    private UUID userId;
+    private Long userId;
     private String email;
     private String firstName;
     private String lastName;
@@ -15,7 +14,7 @@ public class UserSummaryDto {
 
     public UserSummaryDto() {}
 
-    public UserSummaryDto(UUID userId, String email, String firstName, String lastName,
+    public UserSummaryDto(Long userId, String email, String firstName, String lastName,
                           String fullName, String role, String roleCategory, boolean isFirstLogin, String status) {
         this.userId = userId;
         this.email = email;
@@ -33,7 +32,7 @@ public class UserSummaryDto {
     }
 
     public static class UserSummaryDtoBuilder {
-        private UUID userId;
+        private Long userId;
         private String email;
         private String firstName;
         private String lastName;
@@ -43,7 +42,7 @@ public class UserSummaryDto {
         private boolean isFirstLogin;
         private String status;
 
-        public UserSummaryDtoBuilder userId(UUID userId) { this.userId = userId; return this; }
+        public UserSummaryDtoBuilder userId(Long userId) { this.userId = userId; return this; }
         public UserSummaryDtoBuilder email(String email) { this.email = email; return this; }
         public UserSummaryDtoBuilder firstName(String firstName) { this.firstName = firstName; return this; }
         public UserSummaryDtoBuilder lastName(String lastName) { this.lastName = lastName; return this; }
@@ -58,8 +57,8 @@ public class UserSummaryDto {
         }
     }
 
-    public UUID getUserId() { return userId; }
-    public void setUserId(UUID userId) { this.userId = userId; }
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
     public String getFirstName() { return firstName; }

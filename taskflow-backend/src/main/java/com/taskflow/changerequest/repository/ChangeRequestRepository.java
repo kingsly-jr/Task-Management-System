@@ -7,20 +7,20 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+
 
 @Repository
-public interface ChangeRequestRepository extends JpaRepository<ChangeRequest, UUID>, JpaSpecificationExecutor<ChangeRequest> {
+public interface ChangeRequestRepository extends JpaRepository<ChangeRequest, Long>, JpaSpecificationExecutor<ChangeRequest> {
 
-    List<ChangeRequest> findByProject_ProjectIdAndIsDeletedFalseOrderByCreatedAtDesc(UUID projectId);
+    List<ChangeRequest> findByProject_ProjectIdAndIsDeletedFalseOrderByCreatedAtDesc(Long projectId);
 
-    List<ChangeRequest> findByRequestedBy_UserIdAndIsDeletedFalseOrderByCreatedAtDesc(UUID userId);
+    List<ChangeRequest> findByRequestedBy_UserIdAndIsDeletedFalseOrderByCreatedAtDesc(Long userId);
 
     Optional<ChangeRequest> findByChangeRequestCodeIgnoreCaseAndIsDeletedFalse(String code);
 
     boolean existsByChangeRequestCodeIgnoreCaseAndIsDeletedFalse(String code);
 
-    long countByProject_ProjectIdAndIsDeletedFalse(UUID projectId);
+    long countByProject_ProjectIdAndIsDeletedFalse(Long projectId);
 
-    long countByProject_ProjectIdAndStatusAndIsDeletedFalse(UUID projectId, String status);
+    long countByProject_ProjectIdAndStatusAndIsDeletedFalse(Long projectId, String status);
 }

@@ -5,11 +5,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.UUID;
+
 
 @Repository
-public interface SubtaskRepository extends JpaRepository<Subtask, UUID> {
-    List<Subtask> findByTask_TaskIdOrderByCreatedAtAsc(UUID taskId);
-    long countByTask_TaskId(UUID taskId);
-    long countByTask_TaskIdAndIsCompletedTrue(UUID taskId);
+public interface SubtaskRepository extends JpaRepository<Subtask, Long> {
+    List<Subtask> findByTask_TaskIdOrderByCreatedAtAsc(Long taskId);
+    long countByTask_TaskId(Long taskId);
+    long countByTask_TaskIdAndIsCompletedTrue(Long taskId);
 }

@@ -5,12 +5,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.UUID;
+
 
 @Repository
-public interface ChangeRequestCommentRepository extends JpaRepository<ChangeRequestComment, UUID> {
+public interface ChangeRequestCommentRepository extends JpaRepository<ChangeRequestComment, Long> {
 
-    List<ChangeRequestComment> findByChangeRequest_ChangeRequestIdOrderByCreatedAtAsc(UUID changeRequestId);
+    List<ChangeRequestComment> findByChangeRequest_ChangeRequestIdOrderByCreatedAtAsc(Long changeRequestId);
 
-    long countByChangeRequest_ChangeRequestId(UUID changeRequestId);
+    long countByChangeRequest_ChangeRequestId(Long changeRequestId);
 }

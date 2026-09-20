@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 public class DocumentDto {
 
@@ -51,8 +50,8 @@ public class DocumentDto {
     }
 
     public static class DocumentResponse {
-        private UUID documentId;
-        private UUID projectId;
+        private Long documentId;
+        private Long projectId;
         private String projectCode;
         private String projectName;
         private String title;
@@ -65,7 +64,7 @@ public class DocumentDto {
         private String description;
         private Integer version;
         private boolean isClientVisible;
-        private UUID uploadedById;
+        private Long uploadedById;
         private String uploadedByName;
         private String uploadedByEmail;
         private Instant createdAt;
@@ -73,10 +72,10 @@ public class DocumentDto {
 
         public DocumentResponse() {}
 
-        public DocumentResponse(UUID documentId, UUID projectId, String projectCode, String projectName,
+        public DocumentResponse(Long documentId, Long projectId, String projectCode, String projectName,
                                 String title, String category, String fileName, String fileExtension,
                                 Long fileSize, String fileSizeFormatted, String mimeType, String description,
-                                Integer version, boolean isClientVisible, UUID uploadedById,
+                                Integer version, boolean isClientVisible, Long uploadedById,
                                 String uploadedByName, String uploadedByEmail, Instant createdAt, Instant updatedAt) {
             this.documentId = documentId;
             this.projectId = projectId;
@@ -99,10 +98,10 @@ public class DocumentDto {
             this.updatedAt = updatedAt;
         }
 
-        public UUID getDocumentId() { return documentId; }
-        public void setDocumentId(UUID documentId) { this.documentId = documentId; }
-        public UUID getProjectId() { return projectId; }
-        public void setProjectId(UUID projectId) { this.projectId = projectId; }
+        public Long getDocumentId() { return documentId; }
+        public void setDocumentId(Long documentId) { this.documentId = documentId; }
+        public Long getProjectId() { return projectId; }
+        public void setProjectId(Long projectId) { this.projectId = projectId; }
         public String getProjectCode() { return projectCode; }
         public void setProjectCode(String projectCode) { this.projectCode = projectCode; }
         public String getProjectName() { return projectName; }
@@ -127,8 +126,8 @@ public class DocumentDto {
         public void setVersion(Integer version) { this.version = version; }
         public boolean isClientVisible() { return isClientVisible; }
         public void setClientVisible(boolean clientVisible) { isClientVisible = clientVisible; }
-        public UUID getUploadedById() { return uploadedById; }
-        public void setUploadedById(UUID uploadedById) { this.uploadedById = uploadedById; }
+        public Long getUploadedById() { return uploadedById; }
+        public void setUploadedById(Long uploadedById) { this.uploadedById = uploadedById; }
         public String getUploadedByName() { return uploadedByName; }
         public void setUploadedByName(String uploadedByName) { this.uploadedByName = uploadedByName; }
         public String getUploadedByEmail() { return uploadedByEmail; }
@@ -140,21 +139,21 @@ public class DocumentDto {
     }
 
     public static class VersionResponse {
-        private UUID versionId;
+        private Long versionId;
         private Integer versionNumber;
         private String fileName;
         private Long fileSize;
         private String fileSizeFormatted;
         private String changeLog;
-        private UUID uploadedById;
+        private Long uploadedById;
         private String uploadedByName;
         private Instant createdAt;
 
         public VersionResponse() {}
 
-        public VersionResponse(UUID versionId, Integer versionNumber, String fileName,
+        public VersionResponse(Long versionId, Integer versionNumber, String fileName,
                                Long fileSize, String fileSizeFormatted, String changeLog,
-                               UUID uploadedById, String uploadedByName, Instant createdAt) {
+                               Long uploadedById, String uploadedByName, Instant createdAt) {
             this.versionId = versionId;
             this.versionNumber = versionNumber;
             this.fileName = fileName;
@@ -166,8 +165,8 @@ public class DocumentDto {
             this.createdAt = createdAt;
         }
 
-        public UUID getVersionId() { return versionId; }
-        public void setVersionId(UUID versionId) { this.versionId = versionId; }
+        public Long getVersionId() { return versionId; }
+        public void setVersionId(Long versionId) { this.versionId = versionId; }
         public Integer getVersionNumber() { return versionNumber; }
         public void setVersionNumber(Integer versionNumber) { this.versionNumber = versionNumber; }
         public String getFileName() { return fileName; }
@@ -178,8 +177,8 @@ public class DocumentDto {
         public void setFileSizeFormatted(String fileSizeFormatted) { this.fileSizeFormatted = fileSizeFormatted; }
         public String getChangeLog() { return changeLog; }
         public void setChangeLog(String changeLog) { this.changeLog = changeLog; }
-        public UUID getUploadedById() { return uploadedById; }
-        public void setUploadedById(UUID uploadedById) { this.uploadedById = uploadedById; }
+        public Long getUploadedById() { return uploadedById; }
+        public void setUploadedById(Long uploadedById) { this.uploadedById = uploadedById; }
         public String getUploadedByName() { return uploadedByName; }
         public void setUploadedByName(String uploadedByName) { this.uploadedByName = uploadedByName; }
         public Instant getCreatedAt() { return createdAt; }

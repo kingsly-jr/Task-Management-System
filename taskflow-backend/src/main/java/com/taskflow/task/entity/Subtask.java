@@ -7,7 +7,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
-import java.util.UUID;
+
 
 @Entity
 @Table(name = "subtasks")
@@ -15,9 +15,9 @@ import java.util.UUID;
 public class Subtask {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "subtask_id", updatable = false, nullable = false)
-    private UUID subtaskId;
+    private Long subtaskId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id", nullable = false)
@@ -43,7 +43,7 @@ public class Subtask {
 
     public Subtask() {}
 
-    public Subtask(UUID subtaskId, Task task, String title, boolean isCompleted, User assignedTo,
+    public Subtask(Long subtaskId, Task task, String title, boolean isCompleted, User assignedTo,
                    Instant createdAt, Instant updatedAt) {
         this.subtaskId = subtaskId;
         this.task = task;
@@ -59,7 +59,7 @@ public class Subtask {
     }
 
     public static class SubtaskBuilder {
-        private UUID subtaskId;
+        private Long subtaskId;
         private Task task;
         private String title;
         private boolean isCompleted = false;
@@ -67,7 +67,7 @@ public class Subtask {
         private Instant createdAt;
         private Instant updatedAt;
 
-        public SubtaskBuilder subtaskId(UUID subtaskId) { this.subtaskId = subtaskId; return this; }
+        public SubtaskBuilder subtaskId(Long subtaskId) { this.subtaskId = subtaskId; return this; }
         public SubtaskBuilder task(Task task) { this.task = task; return this; }
         public SubtaskBuilder title(String title) { this.title = title; return this; }
         public SubtaskBuilder isCompleted(boolean isCompleted) { this.isCompleted = isCompleted; return this; }
@@ -80,8 +80,8 @@ public class Subtask {
         }
     }
 
-    public UUID getSubtaskId() { return subtaskId; }
-    public void setSubtaskId(UUID subtaskId) { this.subtaskId = subtaskId; }
+    public Long getSubtaskId() { return subtaskId; }
+    public void setSubtaskId(Long subtaskId) { this.subtaskId = subtaskId; }
     public Task getTask() { return task; }
     public void setTask(Task task) { this.task = task; }
     public String getTitle() { return title; }

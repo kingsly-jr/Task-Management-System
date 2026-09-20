@@ -12,7 +12,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/projects")
@@ -56,7 +55,7 @@ public class ProjectController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get project details by ID with access verification")
-    public ResponseEntity<ApiResponse<ProjectDto.ProjectResponse>> getProjectById(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<ProjectDto.ProjectResponse>> getProjectById(@PathVariable Long id) {
         ProjectDto.ProjectResponse response = projectService.getProjectById(id);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
@@ -65,7 +64,7 @@ public class ProjectController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
     @Operation(summary = "Update project details, budget, dates or status (Admin or assigned PM)")
     public ResponseEntity<ApiResponse<ProjectDto.ProjectResponse>> updateProject(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @Valid @RequestBody ProjectDto.UpdateProjectRequest request
     ) {
         ProjectDto.ProjectResponse response = projectService.updateProject(id, request);
@@ -75,7 +74,7 @@ public class ProjectController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Soft delete project (Admin only)")
-    public ResponseEntity<ApiResponse<Void>> softDeleteProject(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<Void>> softDeleteProject(@PathVariable Long id) {
         projectService.softDeleteProject(id);
         return ResponseEntity.ok(ApiResponse.ok("Project deleted successfully", null));
     }

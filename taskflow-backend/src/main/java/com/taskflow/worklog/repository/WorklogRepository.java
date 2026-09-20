@@ -8,22 +8,22 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
+
 
 @Repository
-public interface WorklogRepository extends JpaRepository<Worklog, UUID> {
+public interface WorklogRepository extends JpaRepository<Worklog, Long> {
 
     @Query("SELECT w FROM Worklog w WHERE w.user.userId = :userId AND w.isDeleted = false ORDER BY w.logDate DESC, w.createdAt DESC")
-    List<Worklog> findByUserOrderByDate(@Param("userId") UUID userId);
+    List<Worklog> findByUserOrderByDate(@Param("userId") Long userId);
 
     @Query("SELECT w FROM Worklog w WHERE w.user.userId = :userId AND w.logDate BETWEEN :startDate AND :endDate AND w.isDeleted = false ORDER BY w.logDate DESC, w.createdAt DESC")
-    List<Worklog> findByUserAndDateRange(@Param("userId") UUID userId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+    List<Worklog> findByUserAndDateRange(@Param("userId") Long userId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
     @Query("SELECT w FROM Worklog w WHERE w.project.projectId = :projectId AND w.isDeleted = false ORDER BY w.logDate DESC, w.createdAt DESC")
-    List<Worklog> findByProject(@Param("projectId") UUID projectId);
+    List<Worklog> findByProject(@Param("projectId") Long projectId);
 
     @Query("SELECT w FROM Worklog w WHERE w.project.projectId = :projectId AND w.status = :status AND w.isDeleted = false ORDER BY w.logDate DESC, w.createdAt DESC")
-    List<Worklog> findByProjectAndStatus(@Param("projectId") UUID projectId, @Param("status") String status);
+    List<Worklog> findByProjectAndStatus(@Param("projectId") Long projectId, @Param("status") String status);
 
     @Query("SELECT w FROM Worklog w WHERE w.isDeleted = false ORDER BY w.logDate DESC, w.createdAt DESC")
     List<Worklog> findAllActive();

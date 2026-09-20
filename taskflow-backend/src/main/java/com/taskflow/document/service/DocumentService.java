@@ -51,7 +51,7 @@ public class DocumentService {
     }
 
     @Transactional
-    public DocumentDto.DocumentResponse uploadDocument(UUID projectId, MultipartFile file, DocumentDto.UploadDocumentRequest request) {
+    public DocumentDto.DocumentResponse uploadDocument(Long projectId, MultipartFile file, DocumentDto.UploadDocumentRequest request) {
         if (file == null || file.isEmpty()) {
             throw new BadRequestException("Please select a valid file to upload");
         }
@@ -94,7 +94,7 @@ public class DocumentService {
     }
 
     @Transactional
-    public DocumentDto.DocumentResponse uploadNewVersion(UUID documentId, MultipartFile file, String changeLog) {
+    public DocumentDto.DocumentResponse uploadNewVersion(Long documentId, MultipartFile file, String changeLog) {
         if (file == null || file.isEmpty()) {
             throw new BadRequestException("Please select a valid replacement file");
         }
@@ -141,7 +141,7 @@ public class DocumentService {
     }
 
     @Transactional(readOnly = true)
-    public List<DocumentDto.DocumentResponse> getDocumentsForProject(UUID projectId, String category, String search) {
+    public List<DocumentDto.DocumentResponse> getDocumentsForProject(Long projectId, String category, String search) {
         Project project = projectRepository.findById(projectId)
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
@@ -171,7 +171,7 @@ public class DocumentService {
     }
 
     @Transactional(readOnly = true)
-    public DocumentDto.DocumentDetailResponse getDocumentById(UUID documentId) {
+    public DocumentDto.DocumentDetailResponse getDocumentById(Long documentId) {
         ProjectDocument doc = documentRepository.findById(documentId)
                 .filter(d -> !d.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Document not found with id: " + documentId));
@@ -200,7 +200,7 @@ public class DocumentService {
     }
 
     @Transactional(readOnly = true)
-    public DocumentDownload loadDocumentFile(UUID documentId) {
+    public DocumentDownload loadDocumentFile(Long documentId) {
         ProjectDocument doc = documentRepository.findById(documentId)
                 .filter(d -> !d.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Document not found with id: " + documentId));
@@ -213,7 +213,7 @@ public class DocumentService {
     }
 
     @Transactional
-    public void deleteDocument(UUID documentId) {
+    public void deleteDocument(Long documentId) {
         ProjectDocument doc = documentRepository.findById(documentId)
                 .filter(d -> !d.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Document not found with id: " + documentId));
@@ -229,7 +229,7 @@ public class DocumentService {
     }
 
     @Transactional(readOnly = true)
-    public DocumentDto.DocumentStatsResponse getDocumentStats(UUID projectId) {
+    public DocumentDto.DocumentStatsResponse getDocumentStats(Long projectId) {
         Project project = projectRepository.findById(projectId)
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
@@ -282,7 +282,7 @@ public class DocumentService {
 
     private void verifyProjectViewAccess(Project project, UserPrincipal currentUser) {
         String role = currentUser.getRoleCode();
-        UUID userId = currentUser.getId();
+        Long userId = currentUser.getId();
 
         if ("ADMIN".equalsIgnoreCase(role)) return;
 

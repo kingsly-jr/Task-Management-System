@@ -98,7 +98,7 @@ public class WorklogService {
     }
 
     @Transactional
-    public WorklogDto.WorklogResponse updateWorklog(UUID worklogId, WorklogDto.UpdateWorklogRequest request) {
+    public WorklogDto.WorklogResponse updateWorklog(Long worklogId, WorklogDto.UpdateWorklogRequest request) {
         UserPrincipal currentUser = getCurrentUserPrincipal();
         Worklog worklog = worklogRepository.findById(worklogId)
                 .filter(w -> !w.isDeleted())
@@ -152,7 +152,7 @@ public class WorklogService {
     }
 
     @Transactional
-    public void deleteWorklog(UUID worklogId) {
+    public void deleteWorklog(Long worklogId) {
         UserPrincipal currentUser = getCurrentUserPrincipal();
         Worklog worklog = worklogRepository.findById(worklogId)
                 .filter(w -> !w.isDeleted())
@@ -218,7 +218,7 @@ public class WorklogService {
     }
 
     @Transactional(readOnly = true)
-    public List<WorklogDto.WorklogResponse> getProjectWorklogs(UUID projectId, String status, UUID userId) {
+    public List<WorklogDto.WorklogResponse> getProjectWorklogs(Long projectId, String status, Long userId) {
         Project project = projectRepository.findById(projectId)
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
@@ -241,7 +241,7 @@ public class WorklogService {
     }
 
     @Transactional
-    public WorklogDto.WorklogResponse reviewWorklog(UUID worklogId, WorklogDto.ReviewWorklogRequest request) {
+    public WorklogDto.WorklogResponse reviewWorklog(Long worklogId, WorklogDto.ReviewWorklogRequest request) {
         UserPrincipal currentUser = getCurrentUserPrincipal();
         Worklog worklog = worklogRepository.findById(worklogId)
                 .filter(w -> !w.isDeleted())
@@ -306,13 +306,13 @@ public class WorklogService {
 
         BigDecimal totalHours = BigDecimal.ZERO;
         BigDecimal billableHours = BigDecimal.ZERO;
-        Set<UUID> contributorIds = new HashSet<>();
-        Set<UUID> projectIds = new HashSet<>();
+        Set<Long> contributorIds = new HashSet<>();
+        Set<Long> projectIds = new HashSet<>();
 
         // Group by RoleCategory / Department
         Map<String, DepartmentAccumulator> deptMap = new LinkedHashMap<>();
         // Group by Employee
-        Map<UUID, ContributorAccumulator> contribMap = new LinkedHashMap<>();
+        Map<Long, ContributorAccumulator> contribMap = new LinkedHashMap<>();
 
         for (Worklog w : list) {
             BigDecimal hours = w.getHoursSpent() != null ? w.getHoursSpent() : BigDecimal.ZERO;
@@ -470,28 +470,28 @@ public class WorklogService {
         final String code;
         final String name;
         BigDecimal totalHours = BigDecimal.ZERO;
-        final Set<UUID> employees = new HashSet<>();
+        final Set<Long> employees = new HashSet<>();
 
         DepartmentAccumulator(String code, String name) {
             this.code = code;
             this.name = name;
         }
 
-        void add(BigDecimal h, UUID uid) {
+        void add(BigDecimal h, Long uid) {
             this.totalHours = this.totalHours.add(h);
             this.employees.add(uid);
         }
     }
 
     private static class ContributorAccumulator {
-        final UUID userId;
+        final Long userId;
         final String userName;
         final String roleCategory;
         BigDecimal totalHours = BigDecimal.ZERO;
         BigDecimal billableHours = BigDecimal.ZERO;
         BigDecimal approvedHours = BigDecimal.ZERO;
 
-        ContributorAccumulator(UUID userId, String userName, String roleCategory) {
+        ContributorAccumulator(Long userId, String userName, String roleCategory) {
             this.userId = userId;
             this.userName = userName;
             this.roleCategory = roleCategory;

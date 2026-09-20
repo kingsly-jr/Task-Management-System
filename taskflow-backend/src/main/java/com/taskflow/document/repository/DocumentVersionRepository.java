@@ -5,12 +5,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.UUID;
+
 
 @Repository
-public interface DocumentVersionRepository extends JpaRepository<DocumentVersion, UUID> {
+public interface DocumentVersionRepository extends JpaRepository<DocumentVersion, Long> {
 
-    List<DocumentVersion> findByDocument_DocumentIdOrderByVersionNumberDesc(UUID documentId);
+    List<DocumentVersion> findByDocument_DocumentIdOrderByVersionNumberDesc(Long documentId);
 
-    long countByDocument_DocumentId(UUID documentId);
+    long countByDocument_DocumentId(Long documentId);
 }

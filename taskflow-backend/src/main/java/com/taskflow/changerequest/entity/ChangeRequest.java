@@ -9,7 +9,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.UUID;
+
 
 @Entity
 @Table(name = "change_requests")
@@ -17,9 +17,9 @@ import java.util.UUID;
 public class ChangeRequest {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "change_request_id", updatable = false, nullable = false)
-    private UUID changeRequestId;
+    private Long changeRequestId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id", nullable = false)
@@ -79,7 +79,7 @@ public class ChangeRequest {
 
     public ChangeRequest() {}
 
-    public ChangeRequest(UUID changeRequestId, Project project, String changeRequestCode, String title,
+    public ChangeRequest(Long changeRequestId, Project project, String changeRequestCode, String title,
                          String description, String reasonForChange, BigDecimal estimatedCost,
                          Integer scheduleImpactDays, String priority, String status, User requestedBy,
                          User reviewedBy, String reviewNotes, Instant reviewedAt, boolean isDeleted,
@@ -109,7 +109,7 @@ public class ChangeRequest {
     }
 
     public static class ChangeRequestBuilder {
-        private UUID changeRequestId;
+        private Long changeRequestId;
         private Project project;
         private String changeRequestCode;
         private String title;
@@ -128,7 +128,7 @@ public class ChangeRequest {
         private Instant createdAt;
         private Instant updatedAt;
 
-        public ChangeRequestBuilder changeRequestId(UUID changeRequestId) { this.changeRequestId = changeRequestId; return this; }
+        public ChangeRequestBuilder changeRequestId(Long changeRequestId) { this.changeRequestId = changeRequestId; return this; }
         public ChangeRequestBuilder project(Project project) { this.project = project; return this; }
         public ChangeRequestBuilder changeRequestCode(String changeRequestCode) { this.changeRequestCode = changeRequestCode; return this; }
         public ChangeRequestBuilder title(String title) { this.title = title; return this; }
@@ -155,8 +155,8 @@ public class ChangeRequest {
         }
     }
 
-    public UUID getChangeRequestId() { return changeRequestId; }
-    public void setChangeRequestId(UUID changeRequestId) { this.changeRequestId = changeRequestId; }
+    public Long getChangeRequestId() { return changeRequestId; }
+    public void setChangeRequestId(Long changeRequestId) { this.changeRequestId = changeRequestId; }
     public Project getProject() { return project; }
     public void setProject(Project project) { this.project = project; }
     public String getChangeRequestCode() { return changeRequestCode; }

@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -146,7 +145,7 @@ public class ClientService {
     }
 
     @Transactional(readOnly = true)
-    public ClientDto.ClientResponse getClientById(UUID id) {
+    public ClientDto.ClientResponse getClientById(Long id) {
         Client client = clientRepository.findById(id)
                 .filter(c -> !c.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + id));
@@ -154,7 +153,7 @@ public class ClientService {
     }
 
     @Transactional
-    public ClientDto.ClientResponse updateClient(UUID id, ClientDto.UpdateClientRequest request) {
+    public ClientDto.ClientResponse updateClient(Long id, ClientDto.UpdateClientRequest request) {
         Client client = clientRepository.findById(id)
                 .filter(c -> !c.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + id));
@@ -178,7 +177,7 @@ public class ClientService {
     }
 
     @Transactional
-    public ClientDto.ClientResponse toggleClientStatus(UUID id) {
+    public ClientDto.ClientResponse toggleClientStatus(Long id) {
         Client client = clientRepository.findById(id)
                 .filter(c -> !c.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + id));
@@ -195,7 +194,7 @@ public class ClientService {
     }
 
     @Transactional
-    public void softDeleteClient(UUID id) {
+    public void softDeleteClient(Long id) {
         Client client = clientRepository.findById(id)
                 .filter(c -> !c.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + id));

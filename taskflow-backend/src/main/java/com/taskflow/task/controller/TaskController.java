@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -30,7 +29,7 @@ public class TaskController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
     @Operation(summary = "Create task for project (Admin or assigned PM)")
     public ResponseEntity<ApiResponse<TaskDto.TaskResponse>> createTask(
-            @PathVariable UUID projectId,
+            @PathVariable Long projectId,
             @Valid @RequestBody TaskDto.CreateTaskRequest request) {
         TaskDto.TaskResponse response = taskService.createTask(projectId, request);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -41,10 +40,10 @@ public class TaskController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'CLIENT')")
     @Operation(summary = "Get tasks for project with filters")
     public ResponseEntity<ApiResponse<List<TaskDto.TaskResponse>>> getTasksForProject(
-            @PathVariable UUID projectId,
+            @PathVariable Long projectId,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String priority,
-            @RequestParam(required = false) UUID assigneeId,
+            @RequestParam(required = false) Long assigneeId,
             @RequestParam(required = false) String search) {
         List<TaskDto.TaskResponse> tasks = taskService.getTasksForProject(projectId, status, priority, assigneeId, search);
         return ResponseEntity.ok(ApiResponse.ok(tasks));
@@ -54,7 +53,7 @@ public class TaskController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'CLIENT')")
     @Operation(summary = "Get task summary statistics for a project")
     public ResponseEntity<ApiResponse<TaskDto.TaskStatsResponse>> getProjectTaskStats(
-            @PathVariable UUID projectId) {
+            @PathVariable Long projectId) {
         TaskDto.TaskStatsResponse stats = taskService.getProjectTaskStats(projectId);
         return ResponseEntity.ok(ApiResponse.ok(stats));
     }
@@ -72,7 +71,7 @@ public class TaskController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Get task details including subtasks checklist and comments thread")
     public ResponseEntity<ApiResponse<TaskDto.TaskDetailResponse>> getTaskById(
-            @PathVariable UUID taskId) {
+            @PathVariable Long taskId) {
         TaskDto.TaskDetailResponse detail = taskService.getTaskById(taskId);
         return ResponseEntity.ok(ApiResponse.ok(detail));
     }
@@ -81,7 +80,7 @@ public class TaskController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Update task details, hours, and assignees")
     public ResponseEntity<ApiResponse<TaskDto.TaskResponse>> updateTask(
-            @PathVariable UUID taskId,
+            @PathVariable Long taskId,
             @Valid @RequestBody TaskDto.UpdateTaskRequest request) {
         TaskDto.TaskResponse response = taskService.updateTask(taskId, request);
         return ResponseEntity.ok(ApiResponse.ok("Task updated successfully", response));
@@ -91,7 +90,7 @@ public class TaskController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Update task status (Kanban drag or status dropdown)")
     public ResponseEntity<ApiResponse<TaskDto.TaskResponse>> updateTaskStatus(
-            @PathVariable UUID taskId,
+            @PathVariable Long taskId,
             @RequestBody Map<String, String> body) {
         String status = body.get("status");
         TaskDto.TaskResponse response = taskService.updateTaskStatus(taskId, status);
@@ -102,7 +101,7 @@ public class TaskController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Add subtask to checklist")
     public ResponseEntity<ApiResponse<TaskDto.SubtaskResponse>> addSubtask(
-            @PathVariable UUID taskId,
+            @PathVariable Long taskId,
             @Valid @RequestBody TaskDto.CreateSubtaskRequest request) {
         TaskDto.SubtaskResponse response = taskService.addSubtask(taskId, request);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -113,8 +112,8 @@ public class TaskController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Toggle subtask completion status")
     public ResponseEntity<ApiResponse<TaskDto.SubtaskResponse>> toggleSubtask(
-            @PathVariable UUID taskId,
-            @PathVariable UUID subtaskId) {
+            @PathVariable Long taskId,
+            @PathVariable Long subtaskId) {
         TaskDto.SubtaskResponse response = taskService.toggleSubtask(taskId, subtaskId);
         return ResponseEntity.ok(ApiResponse.ok("Subtask status updated", response));
     }
@@ -123,8 +122,8 @@ public class TaskController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Delete subtask")
     public ResponseEntity<ApiResponse<Void>> deleteSubtask(
-            @PathVariable UUID taskId,
-            @PathVariable UUID subtaskId) {
+            @PathVariable Long taskId,
+            @PathVariable Long subtaskId) {
         taskService.deleteSubtask(taskId, subtaskId);
         return ResponseEntity.ok(ApiResponse.ok("Subtask removed successfully", null));
     }
@@ -133,7 +132,7 @@ public class TaskController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Post comment to task discussion")
     public ResponseEntity<ApiResponse<TaskDto.CommentResponse>> addComment(
-            @PathVariable UUID taskId,
+            @PathVariable Long taskId,
             @Valid @RequestBody TaskDto.CreateCommentRequest request) {
         TaskDto.CommentResponse response = taskService.addComment(taskId, request);
         return ResponseEntity.status(HttpStatus.CREATED)

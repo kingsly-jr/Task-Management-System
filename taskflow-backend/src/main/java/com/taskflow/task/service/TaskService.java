@@ -55,7 +55,7 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskDto.TaskResponse createTask(UUID projectId, TaskDto.CreateTaskRequest request) {
+    public TaskDto.TaskResponse createTask(Long projectId, TaskDto.CreateTaskRequest request) {
         Project project = getProjectAndVerifyManageAccess(projectId);
         UserPrincipal currentUser = getCurrentUserPrincipal();
         User author = userRepository.findById(currentUser.getId())
@@ -64,7 +64,7 @@ public class TaskService {
         // Validate and gather assignees (must be active members of this project)
         Set<User> assignees = new HashSet<>();
         if (request.getAssigneeIds() != null) {
-            for (UUID assigneeId : request.getAssigneeIds()) {
+            for (Long assigneeId : request.getAssigneeIds()) {
                 boolean isMember = projectMemberRepository
                         .existsByProject_ProjectIdAndUser_UserIdAndStatus(projectId, assigneeId, "ACTIVE");
                 if (!isMember) {
@@ -115,7 +115,7 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public List<TaskDto.TaskResponse> getTasksForProject(UUID projectId, String status, String priority, UUID assigneeId, String search) {
+    public List<TaskDto.TaskResponse> getTasksForProject(Long projectId, String status, String priority, Long assigneeId, String search) {
         Project project = projectRepository.findById(projectId)
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
@@ -155,7 +155,7 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public TaskDto.TaskDetailResponse getTaskById(UUID taskId) {
+    public TaskDto.TaskDetailResponse getTaskById(Long taskId) {
         Task task = taskRepository.findById(taskId)
                 .filter(t -> !t.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
@@ -188,7 +188,7 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskDto.TaskResponse updateTask(UUID taskId, TaskDto.UpdateTaskRequest request) {
+    public TaskDto.TaskResponse updateTask(Long taskId, TaskDto.UpdateTaskRequest request) {
         Task task = taskRepository.findById(taskId)
                 .filter(t -> !t.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
@@ -217,7 +217,7 @@ public class TaskService {
         // Update assignees if provided and user is PM/Admin
         if (request.getAssigneeIds() != null && hasManagementAccess(task.getProject(), currentUser)) {
             Set<User> assignees = new HashSet<>();
-            for (UUID assigneeId : request.getAssigneeIds()) {
+            for (Long assigneeId : request.getAssigneeIds()) {
                 boolean isMember = projectMemberRepository
                         .existsByProject_ProjectIdAndUser_UserIdAndStatus(task.getProject().getProjectId(), assigneeId, "ACTIVE");
                 if (!isMember) {
@@ -236,7 +236,7 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskDto.TaskResponse updateTaskStatus(UUID taskId, String newStatus) {
+    public TaskDto.TaskResponse updateTaskStatus(Long taskId, String newStatus) {
         Task task = taskRepository.findById(taskId)
                 .filter(t -> !t.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
@@ -251,7 +251,7 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskDto.SubtaskResponse addSubtask(UUID taskId, TaskDto.CreateSubtaskRequest request) {
+    public TaskDto.SubtaskResponse addSubtask(Long taskId, TaskDto.CreateSubtaskRequest request) {
         Task task = taskRepository.findById(taskId)
                 .filter(t -> !t.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
@@ -270,7 +270,7 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskDto.SubtaskResponse toggleSubtask(UUID taskId, UUID subtaskId) {
+    public TaskDto.SubtaskResponse toggleSubtask(Long taskId, Long subtaskId) {
         Subtask subtask = subtaskRepository.findById(subtaskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Subtask not found with id: " + subtaskId));
 
@@ -287,7 +287,7 @@ public class TaskService {
     }
 
     @Transactional
-    public void deleteSubtask(UUID taskId, UUID subtaskId) {
+    public void deleteSubtask(Long taskId, Long subtaskId) {
         Subtask subtask = subtaskRepository.findById(subtaskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Subtask not found with id: " + subtaskId));
 
@@ -302,7 +302,7 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskDto.CommentResponse addComment(UUID taskId, TaskDto.CreateCommentRequest request) {
+    public TaskDto.CommentResponse addComment(Long taskId, TaskDto.CreateCommentRequest request) {
         Task task = taskRepository.findById(taskId)
                 .filter(t -> !t.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
@@ -330,7 +330,7 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public TaskDto.TaskStatsResponse getProjectTaskStats(UUID projectId) {
+    public TaskDto.TaskStatsResponse getProjectTaskStats(Long projectId) {
         long total = taskRepository.countByProject_ProjectIdAndIsDeletedFalse(projectId);
         long todo = taskRepository.countByProject_ProjectIdAndStatusAndIsDeletedFalse(projectId, "TODO");
         long inProgress = taskRepository.countByProject_ProjectIdAndStatusAndIsDeletedFalse(projectId, "IN_PROGRESS");
@@ -352,7 +352,7 @@ public class TaskService {
         projectRepository.save(project);
     }
 
-    private Project getProjectAndVerifyManageAccess(UUID projectId) {
+    private Project getProjectAndVerifyManageAccess(Long projectId) {
         Project project = projectRepository.findById(projectId)
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
@@ -383,7 +383,7 @@ public class TaskService {
 
     private void verifyProjectViewAccess(Project project, UserPrincipal currentUser) {
         String role = currentUser.getRoleCode();
-        UUID userId = currentUser.getId();
+        Long userId = currentUser.getId();
 
         if ("ADMIN".equalsIgnoreCase(role)) return;
 

@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/notifications")
@@ -41,7 +40,7 @@ public class NotificationController {
     @PatchMapping("/{id}/read")
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Mark specific notification as read")
-    public ResponseEntity<ApiResponse<NotificationDto.NotificationResponse>> markAsRead(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<NotificationDto.NotificationResponse>> markAsRead(@PathVariable Long id) {
         NotificationDto.NotificationResponse response = notificationService.markAsRead(id);
         return ResponseEntity.ok(ApiResponse.ok("Notification marked as read", response));
     }
