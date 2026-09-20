@@ -57,10 +57,13 @@ const AdminProjectsPage = () => {
   const fetchAuxiliaryData = async () => {
     try {
       const [clientsRes, pmsRes] = await Promise.all([
-        api.get('/clients?status=ACTIVE'),
+        api.get('/clients/active'),
         api.get('/users?roleCode=PROJECT_MANAGER&status=ACTIVE&size=100'),
       ]);
-      setClients(clientsRes.data || []);
+      const clientList = Array.isArray(clientsRes?.data)
+        ? clientsRes.data
+        : (clientsRes?.data?.content || []);
+      setClients(clientList);
       setProjectManagers(pmsRes.data?.content || []);
     } catch (err) {
       console.error('Failed to load clients or project managers', err);

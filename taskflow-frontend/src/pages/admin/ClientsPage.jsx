@@ -63,9 +63,17 @@ const ClientsPage = () => {
       if (search.trim()) params.search = search.trim();
       if (statusFilter !== 'ALL') params.status = statusFilter;
       const res = await api.get('/clients', { params });
-      setClients(res.data || []);
+      const clientList = Array.isArray(res?.data)
+        ? res.data
+        : Array.isArray(res?.data?.content)
+          ? res.data.content
+          : Array.isArray(res?.content)
+            ? res.content
+            : [];
+      setClients(clientList);
     } catch (err) {
       setError(err.message || 'Failed to fetch clients');
+      setClients([]);
     } finally {
       setLoading(false);
     }
@@ -206,9 +214,10 @@ const ClientsPage = () => {
   };
 
   // Stats calculation
-  const totalClients = clients.length;
-  const activeClients = clients.filter((c) => c.status === 'ACTIVE').length;
-  const portalAccessCount = clients.filter((c) => c.hasPortalAccount).length;
+  const clientList = Array.isArray(clients) ? clients : [];
+  const totalClients = clientList.length;
+  const activeClients = clientList.filter((c) => c.status === 'ACTIVE').length;
+  const portalAccessCount = clientList.filter((c) => c.hasPortalAccount).length;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -317,7 +326,7 @@ const ClientsPage = () => {
           <div style={{ padding: '3rem', textAlign: 'center', color: '#8c8c8c', fontSize: '0.9rem' }}>
             Loading clients...
           </div>
-        ) : clients.length === 0 ? (
+        ) : clientList.length === 0 ? (
           <div style={{ padding: '3.5rem 1.5rem', textAlign: 'center' }}>
             <Building2 size={36} color="#b3b3b3" style={{ margin: '0 auto 0.75rem auto' }} />
             <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#2b2b2b', margin: '0 0 0.25rem 0' }}>No Clients Found</h3>
@@ -356,7 +365,7 @@ const ClientsPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {clients.map((client) => (
+                {clientList.map((client) => (
                   <tr key={client.clientId} style={{ borderBottom: '1px solid #ececec', transition: 'background-color 0.1s' }} onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#fafafa')} onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}>
                     <td style={{ padding: '0.85rem 1rem' }}>
                       <div style={{ fontWeight: 700, color: '#2b2b2b' }}>{client.companyName}</div>
