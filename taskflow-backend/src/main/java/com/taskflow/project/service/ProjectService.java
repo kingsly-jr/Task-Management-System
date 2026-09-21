@@ -18,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -85,6 +86,16 @@ public class ProjectService {
             }
         }
 
+        BigDecimal budget = request.getBudget();
+        BigDecimal paid = request.getPaidAmount() != null ? request.getPaidAmount() : BigDecimal.ZERO;
+        BigDecimal remaining = request.getRemainingAmount();
+        if (remaining == null && budget != null) {
+            remaining = budget.subtract(paid);
+            if (remaining.compareTo(BigDecimal.ZERO) < 0) {
+                remaining = BigDecimal.ZERO;
+            }
+        }
+
         Project project = Project.builder()
                 .projectCode(code)
                 .projectName(request.getProjectName().trim())
@@ -93,7 +104,9 @@ public class ProjectService {
                 .projectManager(pm)
                 .startDate(request.getStartDate())
                 .expectedEndDate(request.getExpectedEndDate())
-                .budget(request.getBudget())
+                .budget(budget)
+                .paidAmount(paid)
+                .remainingAmount(remaining)
                 .priority(request.getPriority() != null ? request.getPriority().toUpperCase() : "MEDIUM")
                 .status(request.getStatus() != null ? request.getStatus().toUpperCase() : "PLANNING")
                 .progress(0)
@@ -182,7 +195,19 @@ public class ProjectService {
         project.setProjectName(request.getProjectName().trim());
         project.setDescription(request.getDescription());
         project.setActualEndDate(request.getActualEndDate());
-        project.setBudget(request.getBudget());
+        if (request.getBudget() != null) {
+            project.setBudget(request.getBudget());
+        }
+        if (request.getPaidAmount() != null) {
+            project.setPaidAmount(request.getPaidAmount());
+        }
+        if (request.getRemainingAmount() != null) {
+            project.setRemainingAmount(request.getRemainingAmount());
+        } else if (project.getBudget() != null) {
+            BigDecimal paidAmt = project.getPaidAmount() != null ? project.getPaidAmount() : BigDecimal.ZERO;
+            BigDecimal autoRemaining = project.getBudget().subtract(paidAmt);
+            project.setRemainingAmount(autoRemaining.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : autoRemaining);
+        }
         if (request.getPriority() != null) project.setPriority(request.getPriority().toUpperCase().trim());
         if (request.getStatus() != null) project.setStatus(request.getStatus().toUpperCase().trim());
         if (request.getProgress() != null) project.setProgress(Math.max(0, Math.min(100, request.getProgress())));
@@ -229,6 +254,17 @@ public class ProjectService {
             long completed = projectRepository.countByProjectManager_UserIdAndStatusAndIsDeletedFalse(userId, "COMPLETED");
             long planning = projectRepository.countByProjectManager_UserIdAndStatusAndIsDeletedFalse(userId, "PLANNING");
             return new ProjectDto.ProjectStatsResponse(total, active, completed, planning);
+        } else if ("TEAM_MEMBER".equalsIgnoreCase(role)) {
+            List<Project> memberProjects = projectMemberRepository.findByUser_UserIdAndStatus(userId, "ACTIVE").stream()
+                    .map(m -> m.getProject())
+                    .filter(p -> !p.isDeleted())
+                    .distinct()
+                    .collect(Collectors.toList());
+            long total = memberProjects.size();
+            long active = memberProjects.stream().filter(p -> "IN_PROGRESS".equalsIgnoreCase(p.getStatus())).count();
+            long completed = memberProjects.stream().filter(p -> "COMPLETED".equalsIgnoreCase(p.getStatus())).count();
+            long planning = memberProjects.stream().filter(p -> "PLANNING".equalsIgnoreCase(p.getStatus())).count();
+            return new ProjectDto.ProjectStatsResponse(total, active, completed, planning);
         } else {
             long total = projectRepository.findByClient_User_UserIdAndIsDeletedFalse(userId).size();
             return new ProjectDto.ProjectStatsResponse(total, 0, 0, 0);
@@ -272,6 +308,13 @@ public class ProjectService {
 
     public ProjectDto.ProjectResponse mapToResponse(Project project) {
         long teamCount = projectMemberRepository.countByProject_ProjectIdAndStatus(project.getProjectId(), "ACTIVE");
+        BigDecimal paid = project.getPaidAmount() != null ? project.getPaidAmount() : BigDecimal.ZERO;
+        BigDecimal remaining = project.getRemainingAmount();
+        if (remaining == null && project.getBudget() != null) {
+            remaining = project.getBudget().subtract(paid);
+            if (remaining.compareTo(BigDecimal.ZERO) < 0) remaining = BigDecimal.ZERO;
+        }
+
         return new ProjectDto.ProjectResponse(
                 project.getProjectId(),
                 project.getProjectCode(),
@@ -288,6 +331,8 @@ public class ProjectService {
                 project.getExpectedEndDate(),
                 project.getActualEndDate(),
                 project.getBudget(),
+                paid,
+                remaining,
                 project.getPriority(),
                 project.getStatus(),
                 project.getProgress(),

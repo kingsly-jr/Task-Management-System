@@ -51,6 +51,12 @@ public class Project {
     @Column(name = "budget", precision = 12, scale = 2)
     private BigDecimal budget;
 
+    @Column(name = "paid_amount", precision = 12, scale = 2)
+    private BigDecimal paidAmount = BigDecimal.ZERO;
+
+    @Column(name = "remaining_amount", precision = 12, scale = 2)
+    private BigDecimal remainingAmount;
+
     @Column(name = "priority", nullable = false, length = 20)
     private String priority = "MEDIUM"; // LOW, MEDIUM, HIGH, URGENT
 
@@ -81,9 +87,9 @@ public class Project {
 
     public Project(Long projectId, String projectCode, String projectName, String description,
                    Client client, User projectManager, LocalDate startDate, LocalDate expectedEndDate,
-                   LocalDate actualEndDate, BigDecimal budget, String priority, String status,
-                   Integer progress, String technologyStack, boolean isDeleted, Instant deletedAt,
-                   Instant createdAt, Instant updatedAt) {
+                   LocalDate actualEndDate, BigDecimal budget, BigDecimal paidAmount, BigDecimal remainingAmount,
+                   String priority, String status, Integer progress, String technologyStack,
+                   boolean isDeleted, Instant deletedAt, Instant createdAt, Instant updatedAt) {
         this.projectId = projectId;
         this.projectCode = projectCode;
         this.projectName = projectName;
@@ -94,6 +100,8 @@ public class Project {
         this.expectedEndDate = expectedEndDate;
         this.actualEndDate = actualEndDate;
         this.budget = budget;
+        this.paidAmount = paidAmount != null ? paidAmount : BigDecimal.ZERO;
+        this.remainingAmount = remainingAmount;
         this.priority = priority != null ? priority : "MEDIUM";
         this.status = status != null ? status : "PLANNING";
         this.progress = progress != null ? progress : 0;
@@ -119,6 +127,8 @@ public class Project {
         private LocalDate expectedEndDate;
         private LocalDate actualEndDate;
         private BigDecimal budget;
+        private BigDecimal paidAmount = BigDecimal.ZERO;
+        private BigDecimal remainingAmount;
         private String priority = "MEDIUM";
         private String status = "PLANNING";
         private Integer progress = 0;
@@ -138,6 +148,8 @@ public class Project {
         public ProjectBuilder expectedEndDate(LocalDate expectedEndDate) { this.expectedEndDate = expectedEndDate; return this; }
         public ProjectBuilder actualEndDate(LocalDate actualEndDate) { this.actualEndDate = actualEndDate; return this; }
         public ProjectBuilder budget(BigDecimal budget) { this.budget = budget; return this; }
+        public ProjectBuilder paidAmount(BigDecimal paidAmount) { this.paidAmount = paidAmount; return this; }
+        public ProjectBuilder remainingAmount(BigDecimal remainingAmount) { this.remainingAmount = remainingAmount; return this; }
         public ProjectBuilder priority(String priority) { this.priority = priority; return this; }
         public ProjectBuilder status(String status) { this.status = status; return this; }
         public ProjectBuilder progress(Integer progress) { this.progress = progress; return this; }
@@ -149,8 +161,8 @@ public class Project {
 
         public Project build() {
             return new Project(projectId, projectCode, projectName, description, client, projectManager,
-                    startDate, expectedEndDate, actualEndDate, budget, priority, status, progress,
-                    technologyStack, isDeleted, deletedAt, createdAt, updatedAt);
+                    startDate, expectedEndDate, actualEndDate, budget, paidAmount, remainingAmount,
+                    priority, status, progress, technologyStack, isDeleted, deletedAt, createdAt, updatedAt);
         }
     }
 
@@ -174,6 +186,10 @@ public class Project {
     public void setActualEndDate(LocalDate actualEndDate) { this.actualEndDate = actualEndDate; }
     public BigDecimal getBudget() { return budget; }
     public void setBudget(BigDecimal budget) { this.budget = budget; }
+    public BigDecimal getPaidAmount() { return paidAmount; }
+    public void setPaidAmount(BigDecimal paidAmount) { this.paidAmount = paidAmount; }
+    public BigDecimal getRemainingAmount() { return remainingAmount; }
+    public void setRemainingAmount(BigDecimal remainingAmount) { this.remainingAmount = remainingAmount; }
     public String getPriority() { return priority; }
     public void setPriority(String priority) { this.priority = priority; }
     public String getStatus() { return status; }

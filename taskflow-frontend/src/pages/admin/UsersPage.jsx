@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../../api/client';
 import {
   Users,
@@ -15,7 +16,9 @@ import {
   Mail,
   AlertCircle,
   Copy,
-  Check
+  Check,
+  X,
+  RefreshCw
 } from 'lucide-react';
 
 const UsersPage = () => {
@@ -37,6 +40,19 @@ const UsersPage = () => {
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [resetResult, setResetResult] = useState(null);
   const [copied, setCopied] = useState(false);
+
+  // Lock background scroll when any modal is open
+  const isAnyModalOpen = isPmModalOpen || isMemberModalOpen || isEditModalOpen || isResetModalOpen;
+  useEffect(() => {
+    if (isAnyModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isAnyModalOpen]);
 
   // Form states
   const [editingUser, setEditingUser] = useState(null);
@@ -515,22 +531,85 @@ const UsersPage = () => {
       </div>
 
       {/* Add Project Manager Modal */}
-      {isPmModalOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(43, 43, 43, 0.4)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 100, padding: '1rem'
-        }}>
-          <div className="card animate-fade-in" style={{ maxWidth: '480px', width: '100%', padding: '2rem' }}>
-            <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: '0.3rem', color: '#2b2b2b' }}>
-              Create Project Manager
-            </h2>
-            <p style={{ color: '#666666', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
-              Provision a new Project Manager with temporary credentials.
-            </p>
+      {isPmModalOpen && createPortal(
+        <div
+          onClick={() => setIsPmModalOpen(false)}
+          style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="card animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '520px',
+              width: '100%',
+              margin: 'auto',
+              maxHeight: 'min(90vh, 720px)',
+              overflowY: 'auto',
+              padding: '2.25rem',
+              borderRadius: '14px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              backgroundColor: '#ffffff'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+              <div>
+                <span style={{
+                  display: 'inline-block',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  color: '#444444',
+                  backgroundColor: '#f2f2f2',
+                  border: '1px solid #e5e5e5',
+                  padding: '0.2rem 0.55rem',
+                  borderRadius: '4px',
+                  marginBottom: '0.5rem'
+                }}>
+                  Project Manager Provisioning
+                </span>
+                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0, color: '#1e1e1e', letterSpacing: '-0.02em' }}>
+                  Create Project Manager
+                </h2>
+                <p style={{ color: '#666666', fontSize: '0.84rem', margin: '0.35rem 0 0 0' }}>
+                  Provision a new Project Manager with temporary credentials.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPmModalOpen(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.4rem',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#666666',
+                  transition: 'background-color 0.15s ease, color 0.15s ease'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f3f4f6'; e.currentTarget.style.color = '#1e1e1e'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#666666'; }}
+                aria-label="Close modal"
+              >
+                <X size={20} />
+              </button>
+            </div>
 
             {formError && (
               <div style={{
@@ -540,16 +619,18 @@ const UsersPage = () => {
                 padding: '0.65rem 0.9rem',
                 borderRadius: '6px',
                 fontSize: '0.85rem',
-                marginBottom: '1rem'
+                marginBottom: '1.15rem'
               }}>
                 {formError}
               </div>
             )}
 
             <form onSubmit={handleCreatePmSubmit}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem', marginBottom: '1.15rem' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '0.35rem' }}>First Name *</label>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
+                    First Name *
+                  </label>
                   <input
                     type="text"
                     required
@@ -559,7 +640,9 @@ const UsersPage = () => {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '0.35rem' }}>Last Name *</label>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
+                    Last Name *
+                  </label>
                   <input
                     type="text"
                     required
@@ -570,8 +653,10 @@ const UsersPage = () => {
                 </div>
               </div>
 
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '0.35rem' }}>Email Address *</label>
+              <div style={{ marginBottom: '1.15rem' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
+                  Email Address *
+                </label>
                 <input
                   type="email"
                   required
@@ -581,8 +666,10 @@ const UsersPage = () => {
                 />
               </div>
 
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '0.35rem' }}>Phone</label>
+              <div style={{ marginBottom: '1.15rem' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
+                  Phone
+                </label>
                 <input
                   type="text"
                   placeholder="+1-555-0100"
@@ -593,14 +680,32 @@ const UsersPage = () => {
               </div>
 
               <div style={{ marginBottom: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Temporary Password *</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', margin: 0 }}>
+                    Temporary Password *
+                  </label>
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, temporaryPassword: 'PM@' + Math.floor(100 + Math.random() * 900) })}
-                    style={{ fontSize: '0.75rem', color: '#666666', textDecoration: 'underline' }}
+                    style={{
+                      fontSize: '0.76rem',
+                      fontWeight: 600,
+                      color: '#2b2b2b',
+                      background: '#f4f4f4',
+                      border: '1px solid #d4d4d4',
+                      borderRadius: '4px',
+                      padding: '0.2rem 0.55rem',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      transition: 'all 0.15s ease'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#e5e5e5'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#f4f4f4'; }}
                   >
-                    Generate Random
+                    <RefreshCw size={12} />
+                    <span>Generate Random</span>
                   </button>
                 </div>
                 <input
@@ -612,7 +717,14 @@ const UsersPage = () => {
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '0.75rem',
+                marginTop: '1.5rem',
+                paddingTop: '1.25rem',
+                borderTop: '1px solid #f0f0f0'
+              }}>
                 <button
                   type="button"
                   onClick={() => setIsPmModalOpen(false)}
@@ -631,26 +743,90 @@ const UsersPage = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Add Team Member Modal */}
-      {isMemberModalOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(43, 43, 43, 0.4)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 100, padding: '1rem'
-        }}>
-          <div className="card animate-fade-in" style={{ maxWidth: '480px', width: '100%', padding: '2rem' }}>
-            <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: '0.3rem', color: '#2b2b2b' }}>
-              Create Team Member
-            </h2>
-            <p style={{ color: '#666666', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
-              Provision an employee and link them to an active Role Category specialization.
-            </p>
+      {isMemberModalOpen && createPortal(
+        <div
+          onClick={() => setIsMemberModalOpen(false)}
+          style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="card animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '520px',
+              width: '100%',
+              margin: 'auto',
+              maxHeight: 'min(90vh, 720px)',
+              overflowY: 'auto',
+              padding: '2.25rem',
+              borderRadius: '14px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              backgroundColor: '#ffffff'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+              <div>
+                <span style={{
+                  display: 'inline-block',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  color: '#444444',
+                  backgroundColor: '#f2f2f2',
+                  border: '1px solid #e5e5e5',
+                  padding: '0.2rem 0.55rem',
+                  borderRadius: '4px',
+                  marginBottom: '0.5rem'
+                }}>
+                  Team Member Provisioning
+                </span>
+                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0, color: '#1e1e1e', letterSpacing: '-0.02em' }}>
+                  Create Team Member
+                </h2>
+                <p style={{ color: '#666666', fontSize: '0.84rem', margin: '0.35rem 0 0 0' }}>
+                  Provision an employee and link them to an active Role Category specialization.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsMemberModalOpen(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.4rem',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#666666',
+                  transition: 'background-color 0.15s ease, color 0.15s ease'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f3f4f6'; e.currentTarget.style.color = '#1e1e1e'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#666666'; }}
+                aria-label="Close modal"
+              >
+                <X size={20} />
+              </button>
+            </div>
 
             {formError && (
               <div style={{
@@ -660,16 +836,18 @@ const UsersPage = () => {
                 padding: '0.65rem 0.9rem',
                 borderRadius: '6px',
                 fontSize: '0.85rem',
-                marginBottom: '1rem'
+                marginBottom: '1.15rem'
               }}>
                 {formError}
               </div>
             )}
 
             <form onSubmit={handleCreateMemberSubmit}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem', marginBottom: '1.15rem' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '0.35rem' }}>First Name *</label>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
+                    First Name *
+                  </label>
                   <input
                     type="text"
                     required
@@ -679,7 +857,9 @@ const UsersPage = () => {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '0.35rem' }}>Last Name *</label>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
+                    Last Name *
+                  </label>
                   <input
                     type="text"
                     required
@@ -690,8 +870,10 @@ const UsersPage = () => {
                 </div>
               </div>
 
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '0.35rem' }}>Email Address *</label>
+              <div style={{ marginBottom: '1.15rem' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
+                  Email Address *
+                </label>
                 <input
                   type="email"
                   required
@@ -702,8 +884,8 @@ const UsersPage = () => {
               </div>
 
               {/* Dynamic Role Category Dropdown */}
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '0.35rem' }}>
+              <div style={{ marginBottom: '1.15rem' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
                   Professional Role Category (Skill) *
                 </label>
                 <select
@@ -721,8 +903,10 @@ const UsersPage = () => {
                 </select>
               </div>
 
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '0.35rem' }}>Phone</label>
+              <div style={{ marginBottom: '1.15rem' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
+                  Phone
+                </label>
                 <input
                   type="text"
                   placeholder="+1-555-0100"
@@ -733,14 +917,32 @@ const UsersPage = () => {
               </div>
 
               <div style={{ marginBottom: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Temporary Password *</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', margin: 0 }}>
+                    Temporary Password *
+                  </label>
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, temporaryPassword: 'Dev@' + Math.floor(100 + Math.random() * 900) })}
-                    style={{ fontSize: '0.75rem', color: '#666666', textDecoration: 'underline' }}
+                    style={{
+                      fontSize: '0.76rem',
+                      fontWeight: 600,
+                      color: '#2b2b2b',
+                      background: '#f4f4f4',
+                      border: '1px solid #d4d4d4',
+                      borderRadius: '4px',
+                      padding: '0.2rem 0.55rem',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      transition: 'all 0.15s ease'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#e5e5e5'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#f4f4f4'; }}
                   >
-                    Generate Random
+                    <RefreshCw size={12} />
+                    <span>Generate Random</span>
                   </button>
                 </div>
                 <input
@@ -752,7 +954,14 @@ const UsersPage = () => {
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '0.75rem',
+                marginTop: '1.5rem',
+                paddingTop: '1.25rem',
+                borderTop: '1px solid #f0f0f0'
+              }}>
                 <button
                   type="button"
                   onClick={() => setIsMemberModalOpen(false)}
@@ -771,26 +980,90 @@ const UsersPage = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Edit User Modal */}
-      {isEditModalOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(43, 43, 43, 0.4)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 100, padding: '1rem'
-        }}>
-          <div className="card animate-fade-in" style={{ maxWidth: '480px', width: '100%', padding: '2rem' }}>
-            <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: '0.3rem', color: '#2b2b2b' }}>
-              Edit User Information
-            </h2>
-            <p style={{ color: '#666666', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
-              Update profile details for <strong>{editingUser?.email}</strong>.
-            </p>
+      {isEditModalOpen && createPortal(
+        <div
+          onClick={() => setIsEditModalOpen(false)}
+          style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="card animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '520px',
+              width: '100%',
+              margin: 'auto',
+              maxHeight: 'min(90vh, 720px)',
+              overflowY: 'auto',
+              padding: '2.25rem',
+              borderRadius: '14px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              backgroundColor: '#ffffff'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+              <div>
+                <span style={{
+                  display: 'inline-block',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  color: '#444444',
+                  backgroundColor: '#f2f2f2',
+                  border: '1px solid #e5e5e5',
+                  padding: '0.2rem 0.55rem',
+                  borderRadius: '4px',
+                  marginBottom: '0.5rem'
+                }}>
+                  User Management
+                </span>
+                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0, color: '#2b2b2b', letterSpacing: '-0.02em' }}>
+                  Edit User Information
+                </h2>
+                <p style={{ color: '#666666', fontSize: '0.84rem', margin: '0.35rem 0 0 0' }}>
+                  Update profile details for <strong>{editingUser?.email}</strong>.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsEditModalOpen(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.4rem',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#666666',
+                  transition: 'background-color 0.15s ease, color 0.15s ease'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f3f4f6'; e.currentTarget.style.color = '#1e1e1e'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#666666'; }}
+                aria-label="Close modal"
+              >
+                <X size={20} />
+              </button>
+            </div>
 
             {formError && (
               <div style={{
@@ -800,16 +1073,18 @@ const UsersPage = () => {
                 padding: '0.65rem 0.9rem',
                 borderRadius: '6px',
                 fontSize: '0.85rem',
-                marginBottom: '1rem'
+                marginBottom: '1.15rem'
               }}>
                 {formError}
               </div>
             )}
 
             <form onSubmit={handleEditSubmit}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem', marginBottom: '1.15rem' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '0.35rem' }}>First Name *</label>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
+                    First Name *
+                  </label>
                   <input
                     type="text"
                     required
@@ -819,7 +1094,9 @@ const UsersPage = () => {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '0.35rem' }}>Last Name *</label>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
+                    Last Name *
+                  </label>
                   <input
                     type="text"
                     required
@@ -830,8 +1107,10 @@ const UsersPage = () => {
                 </div>
               </div>
 
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '0.35rem' }}>Phone</label>
+              <div style={{ marginBottom: '1.15rem' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
+                  Phone
+                </label>
                 <input
                   type="text"
                   className="input-field"
@@ -841,8 +1120,8 @@ const UsersPage = () => {
               </div>
 
               {editingUser?.role === 'TEAM_MEMBER' && (
-                <div style={{ marginBottom: '1rem' }}>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '0.35rem' }}>
+                <div style={{ marginBottom: '1.15rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
                     Role Category Specialization
                   </label>
                   <select
@@ -860,7 +1139,9 @@ const UsersPage = () => {
               )}
 
               <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '0.35rem' }}>Status</label>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
+                  Status
+                </label>
                 <select
                   className="input-field"
                   value={formData.status}
@@ -871,7 +1152,14 @@ const UsersPage = () => {
                 </select>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '0.75rem',
+                marginTop: '1.5rem',
+                paddingTop: '1.25rem',
+                borderTop: '1px solid #f0f0f0'
+              }}>
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
@@ -890,23 +1178,70 @@ const UsersPage = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Password Reset Result Modal */}
-      {isResetModalOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(43, 43, 43, 0.4)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 100, padding: '1rem'
-        }}>
-          <div className="card animate-fade-in" style={{ maxWidth: '440px', width: '100%', padding: '2rem' }}>
+      {isResetModalOpen && createPortal(
+        <div
+          onClick={() => setIsResetModalOpen(false)}
+          style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="card animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '460px',
+              width: '100%',
+              margin: 'auto',
+              maxHeight: 'min(90vh, 720px)',
+              overflowY: 'auto',
+              padding: '2.25rem',
+              borderRadius: '14px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              backgroundColor: '#ffffff'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.25rem' }}>
+              <button
+                type="button"
+                onClick={() => setIsResetModalOpen(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.4rem',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#666666',
+                  transition: 'background-color 0.15s ease, color 0.15s ease'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f3f4f6'; e.currentTarget.style.color = '#1e1e1e'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#666666'; }}
+                aria-label="Close modal"
+              >
+                <X size={20} />
+              </button>
+            </div>
             <div style={{
-              width: '44px',
-              height: '44px',
+              width: '48px',
+              height: '48px',
               borderRadius: '50%',
               backgroundColor: '#f4f4f4',
               border: '1px solid #d4d4d4',
@@ -915,9 +1250,9 @@ const UsersPage = () => {
               justifyContent: 'center',
               margin: '0 auto 1rem auto'
             }}>
-              <KeyRound size={22} color="#2b2b2b" />
+              <KeyRound size={24} color="#2b2b2b" />
             </div>
-            <h2 style={{ fontSize: '1.3rem', fontWeight: 800, textAlign: 'center', marginBottom: '0.35rem', color: '#2b2b2b' }}>
+            <h2 style={{ fontSize: '1.35rem', fontWeight: 800, textAlign: 'center', marginBottom: '0.35rem', color: '#2b2b2b' }}>
               Temporary Password Generated
             </h2>
             <p style={{ color: '#666666', fontSize: '0.85rem', textAlign: 'center', marginBottom: '1.5rem', lineHeight: 1.5 }}>
@@ -928,20 +1263,20 @@ const UsersPage = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              backgroundColor: '#f4f4f4',
-              border: '1px solid #d4d4d4',
-              padding: '0.85rem 1rem',
+              backgroundColor: '#f8f8f8',
+              border: '1px solid #e0e0e0',
+              padding: '0.9rem 1.15rem',
               borderRadius: '8px',
               marginBottom: '1.5rem'
             }}>
-              <code style={{ fontSize: '1.1rem', fontWeight: 700, letterSpacing: '0.05em', color: '#2b2b2b' }}>
+              <code style={{ fontSize: '1.15rem', fontWeight: 700, letterSpacing: '0.05em', color: '#1e1e1e' }}>
                 {resetResult?.temporaryPassword}
               </code>
               <button
                 type="button"
                 onClick={() => copyToClipboard(resetResult?.temporaryPassword)}
                 className="btn-secondary"
-                style={{ padding: '0.4rem 0.75rem', fontSize: '0.78rem' }}
+                style={{ padding: '0.45rem 0.85rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
               >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
                 <span>{copied ? 'Copied' : 'Copy'}</span>
@@ -951,12 +1286,13 @@ const UsersPage = () => {
             <button
               onClick={() => setIsResetModalOpen(false)}
               className="btn-primary"
-              style={{ width: '100%' }}
+              style={{ width: '100%', padding: '0.75rem' }}
             >
               Done
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

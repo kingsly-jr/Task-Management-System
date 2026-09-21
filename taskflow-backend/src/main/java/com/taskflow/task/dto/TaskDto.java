@@ -21,10 +21,14 @@ public class TaskDto {
         private BigDecimal estimatedHours;
         private LocalDate startDate;
         private LocalDate dueDate;
+        private Long projectId;
         private Long milestoneId;
         private List<Long> assigneeIds = new ArrayList<>();
 
         public CreateTaskRequest() {}
+
+        public Long getProjectId() { return projectId; }
+        public void setProjectId(Long projectId) { this.projectId = projectId; }
 
         public String getTitle() { return title; }
         public void setTitle(String title) { this.title = title; }

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../../api/client';
 import {
   FileText,
@@ -44,6 +45,14 @@ const getFileIcon = (ext) => {
   return FileText;
 };
 
+const formatBytes = (bytes) => {
+  if (!bytes || bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+};
+
 const ManagerDocumentsPage = () => {
   const [projects, setProjects] = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState('');
@@ -63,6 +72,8 @@ const ManagerDocumentsPage = () => {
   const [uploadDescription, setUploadDescription] = useState('');
   const [uploadClientVisible, setUploadClientVisible] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   // New Version Modal State
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
@@ -70,6 +81,8 @@ const ManagerDocumentsPage = () => {
   const [versionFile, setVersionFile] = useState(null);
   const [versionChangeLog, setVersionChangeLog] = useState('');
   const [versionUploading, setVersionUploading] = useState(false);
+  const versionFileInputRef = useRef(null);
+  const [isVersionDragging, setIsVersionDragging] = useState(false);
 
   // Detail & History Modal State
   const [selectedDocDetail, setSelectedDocDetail] = useState(null);
@@ -85,6 +98,17 @@ const ManagerDocumentsPage = () => {
       fetchStats(selectedProjectId);
     }
   }, [selectedProjectId, categoryFilter, search]);
+
+  useEffect(() => {
+    if (isUploadModalOpen || isVersionModalOpen || selectedDocDetail) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isUploadModalOpen, isVersionModalOpen, selectedDocDetail]);
 
   const fetchProjects = async () => {
     try {
@@ -503,56 +527,185 @@ const ManagerDocumentsPage = () => {
       </div>
 
       {/* Upload Document Modal */}
-      {isUploadModalOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 100,
-          padding: '1rem'
-        }}>
-          <div className="card animate-scale-up" style={{ width: '100%', maxWidth: '550px', maxHeight: '90vh', overflowY: 'auto', padding: '2rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #d4d4d4', paddingBottom: '0.75rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Upload size={20} color="#2b2b2b" />
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#2b2b2b', margin: 0 }}>
-                  Upload Project Document
-                </h2>
+      {isUploadModalOpen && createPortal(
+        <div
+          onClick={() => setIsUploadModalOpen(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="card animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '580px',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              padding: '2rem 2.25rem',
+              borderRadius: '16px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}
+          >
+            {/* Modal Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', borderBottom: '1px solid #e5e5e5', paddingBottom: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div style={{ width: '42px', height: '42px', borderRadius: '10px', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Upload size={20} color="#1e1e1e" />
+                </div>
+                <div>
+                  <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e1e1e', margin: 0, letterSpacing: '-0.01em' }}>
+                    Upload Project Document
+                  </h2>
+                  <p style={{ fontSize: '0.8rem', color: '#666666', margin: '0.2rem 0 0 0' }}>
+                    Attach specifications, deliverables, contracts, or architecture files to this workspace.
+                  </p>
+                </div>
               </div>
-              <button onClick={() => setIsUploadModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8c8c8c' }}>
-                <X size={18} />
+              <button
+                type="button"
+                onClick={() => setIsUploadModalOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8c8c8c', padding: '0.25rem', display: 'flex' }}
+              >
+                <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleUploadSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <form onSubmit={handleUploadSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.35rem' }}>
+              {/* File Dropzone */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>
-                  Select File *
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.4rem' }}>
+                  Select File <span style={{ color: '#c92a2a' }}>*</span>
                 </label>
-                <input
-                  type="file"
-                  required
-                  onChange={(e) => {
-                    const f = e.target.files[0];
-                    setUploadFile(f);
-                    if (f && !uploadTitle) {
-                      setUploadTitle(f.name.replace(/\.[^/.]+$/, ''));
-                    }
-                  }}
-                  className="form-control"
-                  style={{ padding: '0.45rem' }}
-                />
+
+                {!uploadFile ? (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                    onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setIsDragging(false);
+                      const f = e.dataTransfer.files[0];
+                      if (f) {
+                        setUploadFile(f);
+                        if (!uploadTitle) setUploadTitle(f.name.replace(/\.[^/.]+$/, ''));
+                      }
+                    }}
+                    style={{
+                      border: isDragging ? '2px dashed #1e1e1e' : '2px dashed #d4d4d4',
+                      backgroundColor: isDragging ? '#f5f5f5' : '#fcfcfc',
+                      borderRadius: '10px',
+                      padding: '1.75rem 1rem',
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem'
+                    }}
+                  >
+                    <div style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Upload size={20} color="#444444" />
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#1e1e1e' }}>
+                        Click to browse
+                      </span>
+                      <span style={{ fontSize: '0.88rem', color: '#666666' }}> or drag and drop file here</span>
+                    </div>
+                    <span style={{ fontSize: '0.75rem', color: '#8c8c8c' }}>
+                      Supports PDF, DOCX, XLSX, Images, ZIP, Source Code (up to 50 MB)
+                    </span>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        const f = e.target.files[0];
+                        if (f) {
+                          setUploadFile(f);
+                          if (!uploadTitle) setUploadTitle(f.name.replace(/\.[^/.]+$/, ''));
+                        }
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.85rem 1rem',
+                    backgroundColor: '#f8fbf9',
+                    border: '1px solid #b2f2bb',
+                    borderRadius: '10px'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', overflow: 'hidden' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundColor: '#e6fcf5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        {React.createElement(getFileIcon(uploadFile.name.slice(uploadFile.name.lastIndexOf('.'))), { size: 20, color: '#0ca678' })}
+                      </div>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#1e1e1e', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {uploadFile.name}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: '#666666' }}>
+                          {formatBytes(uploadFile.size)} • Ready to upload
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        style={{ fontSize: '0.78rem', fontWeight: 600, color: '#1e1e1e', padding: '0.35rem 0.65rem', border: '1px solid #d4d4d4', borderRadius: '6px', backgroundColor: '#ffffff' }}
+                      >
+                        Change
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setUploadFile(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                        style={{ padding: '0.35rem', color: '#8c8c8c', border: 'none', background: 'none', cursor: 'pointer' }}
+                        title="Remove file"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        const f = e.target.files[0];
+                        if (f) {
+                          setUploadFile(f);
+                          if (!uploadTitle) setUploadTitle(f.name.replace(/\.[^/.]+$/, ''));
+                        }
+                      }}
+                    />
+                  </div>
+                )}
               </div>
 
+              {/* Document Display Title */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>
-                  Document Display Title *
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.4rem' }}>
+                  Document Display Title <span style={{ color: '#c92a2a' }}>*</span>
                 </label>
                 <input
                   type="text"
@@ -561,18 +714,24 @@ const ManagerDocumentsPage = () => {
                   value={uploadTitle}
                   onChange={(e) => setUploadTitle(e.target.value)}
                   className="form-control"
+                  style={{ width: '100%', fontSize: '0.88rem', padding: '0.65rem 0.85rem' }}
                 />
+                <span style={{ fontSize: '0.72rem', color: '#8c8c8c', marginTop: '0.25rem', display: 'block' }}>
+                  Friendly title shown in document lists and client stakeholder portals.
+                </span>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              {/* Category & Visibility Row */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', alignItems: 'start' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>
-                    Document Category
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.4rem' }}>
+                    Document Category <span style={{ color: '#c92a2a' }}>*</span>
                   </label>
                   <select
                     value={uploadCategory}
                     onChange={(e) => setUploadCategory(e.target.value)}
                     className="form-control"
+                    style={{ width: '100%', height: '46px', fontSize: '0.88rem', padding: '0.55rem 0.85rem' }}
                   >
                     {CATEGORIES.filter(c => c.key !== 'ALL').map(c => (
                       <option key={c.key} value={c.key}>{c.label}</option>
@@ -581,147 +740,332 @@ const ManagerDocumentsPage = () => {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>
-                    Client Visibility
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.4rem' }}>
+                    Client Portal Visibility
                   </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', height: '38px', cursor: 'pointer', fontSize: '0.88rem' }}>
+                  <div
+                    onClick={() => setUploadClientVisible(!uploadClientVisible)}
+                    style={{
+                      height: '46px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '0 0.85rem',
+                      borderRadius: '6px',
+                      border: uploadClientVisible ? '1px solid #b2f2bb' : '1px solid #d4d4d4',
+                      backgroundColor: uploadClientVisible ? '#f8fbf9' : '#fafafa',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      {uploadClientVisible ? <Eye size={16} color="#0ca678" /> : <EyeOff size={16} color="#8c8c8c" />}
+                      <span style={{ fontSize: '0.82rem', fontWeight: 600, color: uploadClientVisible ? '#1e1e1e' : '#666666' }}>
+                        {uploadClientVisible ? 'Visible in Client Portal' : 'Internal Team Only'}
+                      </span>
+                    </div>
                     <input
                       type="checkbox"
                       checked={uploadClientVisible}
-                      onChange={(e) => setUploadClientVisible(e.target.checked)}
+                      onChange={() => {}}
+                      style={{ accentColor: '#2b2b2b', width: '16px', height: '16px', cursor: 'pointer' }}
                     />
-                    <span>Visible in Client Portal</span>
-                  </label>
+                  </div>
                 </div>
               </div>
 
+              {/* Description */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>
-                  Description / Deliverable Notes
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.4rem' }}>
+                  Description / Deliverable Notes <span style={{ fontWeight: 400, color: '#8c8c8c' }}>(Optional)</span>
                 </label>
                 <textarea
                   rows={3}
-                  placeholder="Brief summary or deliverable sign-off notes..."
+                  placeholder="Brief summary, version notes, or client deliverable sign-off notes..."
                   value={uploadDescription}
                   onChange={(e) => setUploadDescription(e.target.value)}
                   className="form-control"
+                  style={{ width: '100%', fontSize: '0.88rem', padding: '0.65rem 0.85rem', minHeight: '80px', resize: 'vertical' }}
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem', borderTop: '1px solid #d4d4d4', paddingTop: '1rem' }}>
+              {/* Footer */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.25rem', borderTop: '1px solid #e5e5e5', paddingTop: '1.25rem' }}>
                 <button
                   type="button"
                   onClick={() => setIsUploadModalOpen(false)}
                   className="btn btn-secondary"
+                  style={{ padding: '0.6rem 1.35rem', fontSize: '0.86rem' }}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={uploading}
+                  disabled={uploading || !uploadFile}
                   className="btn btn-primary"
+                  style={{
+                    padding: '0.6rem 1.6rem',
+                    fontSize: '0.86rem',
+                    opacity: (uploading || !uploadFile) ? 0.7 : 1,
+                    cursor: (uploading || !uploadFile) ? 'not-allowed' : 'pointer'
+                  }}
                 >
                   {uploading ? 'Uploading...' : 'Save & Upload'}
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Upload New Version Modal */}
-      {isVersionModalOpen && selectedDocForVersion && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 100,
-          padding: '1rem'
-        }}>
-          <div className="card animate-scale-up" style={{ width: '100%', maxWidth: '500px', padding: '2rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #d4d4d4', paddingBottom: '0.75rem' }}>
-              <div>
-                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#666666' }}>REVISION UPDATE</div>
-                <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#2b2b2b', margin: 0 }}>
-                  Upload v{selectedDocForVersion.version + 1} for "{selectedDocForVersion.title}"
-                </h2>
+      {isVersionModalOpen && selectedDocForVersion && createPortal(
+        <div
+          onClick={() => setIsVersionModalOpen(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="card animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '560px',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              padding: '2rem 2.25rem',
+              borderRadius: '16px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', borderBottom: '1px solid #e5e5e5', paddingBottom: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div style={{ width: '42px', height: '42px', borderRadius: '10px', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <History size={20} color="#1e1e1e" />
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#666666', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    REVISION UPDATE
+                  </div>
+                  <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#1e1e1e', margin: '0.1rem 0 0 0' }}>
+                    Upload v{selectedDocForVersion.version + 1} for "{selectedDocForVersion.title}"
+                  </h2>
+                </div>
               </div>
-              <button onClick={() => setIsVersionModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8c8c8c' }}>
-                <X size={18} />
+              <button
+                type="button"
+                onClick={() => setIsVersionModalOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8c8c8c', padding: '0.25rem', display: 'flex' }}
+              >
+                <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleVersionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <form onSubmit={handleVersionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.35rem' }}>
+              {/* File Dropzone */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>
-                  Select Replacement File *
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.4rem' }}>
+                  Select Replacement File <span style={{ color: '#c92a2a' }}>*</span>
                 </label>
-                <input
-                  type="file"
-                  required
-                  onChange={(e) => setVersionFile(e.target.files[0])}
-                  className="form-control"
-                  style={{ padding: '0.45rem' }}
-                />
+
+                {!versionFile ? (
+                  <div
+                    onClick={() => versionFileInputRef.current?.click()}
+                    onDragOver={(e) => { e.preventDefault(); setIsVersionDragging(true); }}
+                    onDragLeave={(e) => { e.preventDefault(); setIsVersionDragging(false); }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setIsVersionDragging(false);
+                      const f = e.dataTransfer.files[0];
+                      if (f) setVersionFile(f);
+                    }}
+                    style={{
+                      border: isVersionDragging ? '2px dashed #1e1e1e' : '2px dashed #d4d4d4',
+                      backgroundColor: isVersionDragging ? '#f5f5f5' : '#fcfcfc',
+                      borderRadius: '10px',
+                      padding: '1.75rem 1rem',
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem'
+                    }}
+                  >
+                    <div style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Upload size={20} color="#444444" />
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#1e1e1e' }}>
+                        Click to browse replacement file
+                      </span>
+                      <span style={{ fontSize: '0.88rem', color: '#666666' }}> or drag and drop here</span>
+                    </div>
+                    <span style={{ fontSize: '0.75rem', color: '#8c8c8c' }}>
+                      Replaces active download while preserving v{selectedDocForVersion.version} in audit archive
+                    </span>
+                    <input
+                      ref={versionFileInputRef}
+                      type="file"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        const f = e.target.files[0];
+                        if (f) setVersionFile(f);
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.85rem 1rem',
+                    backgroundColor: '#f8fbf9',
+                    border: '1px solid #b2f2bb',
+                    borderRadius: '10px'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', overflow: 'hidden' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundColor: '#e6fcf5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        {React.createElement(getFileIcon(versionFile.name.slice(versionFile.name.lastIndexOf('.'))), { size: 20, color: '#0ca678' })}
+                      </div>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#1e1e1e', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {versionFile.name}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: '#666666' }}>
+                          {formatBytes(versionFile.size)} • New revision v{selectedDocForVersion.version + 1}
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+                      <button
+                        type="button"
+                        onClick={() => versionFileInputRef.current?.click()}
+                        style={{ fontSize: '0.78rem', fontWeight: 600, color: '#1e1e1e', padding: '0.35rem 0.65rem', border: '1px solid #d4d4d4', borderRadius: '6px', backgroundColor: '#ffffff' }}
+                      >
+                        Change
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setVersionFile(null); if (versionFileInputRef.current) versionFileInputRef.current.value = ''; }}
+                        style={{ padding: '0.35rem', color: '#8c8c8c', border: 'none', background: 'none', cursor: 'pointer' }}
+                        title="Remove file"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                    <input
+                      ref={versionFileInputRef}
+                      type="file"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        const f = e.target.files[0];
+                        if (f) setVersionFile(f);
+                      }}
+                    />
+                  </div>
+                )}
               </div>
 
+              {/* Changelog */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>
-                  Changelog / Revision Notes *
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.4rem' }}>
+                  Changelog / Revision Notes <span style={{ color: '#c92a2a' }}>*</span>
                 </label>
                 <textarea
                   rows={3}
                   required
-                  placeholder="Describe what changed in this version (e.g. Revised SLA clauses and pricing matrix)..."
+                  placeholder="Describe what changed in this version (e.g. Revised SLA clauses, updated milestone schedules, or new deliverables matrix)..."
                   value={versionChangeLog}
                   onChange={(e) => setVersionChangeLog(e.target.value)}
                   className="form-control"
+                  style={{ width: '100%', fontSize: '0.88rem', padding: '0.65rem 0.85rem', minHeight: '80px', resize: 'vertical' }}
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem', borderTop: '1px solid #d4d4d4', paddingTop: '1rem' }}>
+              {/* Footer */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.25rem', borderTop: '1px solid #e5e5e5', paddingTop: '1.25rem' }}>
                 <button
                   type="button"
                   onClick={() => setIsVersionModalOpen(false)}
                   className="btn btn-secondary"
+                  style={{ padding: '0.6rem 1.35rem', fontSize: '0.86rem' }}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={versionUploading}
+                  disabled={versionUploading || !versionFile}
                   className="btn btn-primary"
+                  style={{
+                    padding: '0.6rem 1.6rem',
+                    fontSize: '0.86rem',
+                    opacity: (versionUploading || !versionFile) ? 0.7 : 1,
+                    cursor: (versionUploading || !versionFile) ? 'not-allowed' : 'pointer'
+                  }}
                 >
                   {versionUploading ? 'Uploading...' : `Upload v${selectedDocForVersion.version + 1}`}
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Version History Modal */}
-      {selectedDocDetail && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 100,
-          padding: '1rem'
-        }}>
-          <div className="card animate-scale-up" style={{ width: '100%', maxWidth: '600px', maxHeight: '85vh', overflowY: 'auto', padding: '2rem' }}>
+      {selectedDocDetail && createPortal(
+        <div
+          onClick={() => setSelectedDocDetail(null)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="card animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '620px',
+              maxHeight: '85vh',
+              overflowY: 'auto',
+              padding: '2rem',
+              borderRadius: '14px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}
+          >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #d4d4d4', paddingBottom: '0.75rem' }}>
               <div>
                 <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#666666' }}>DOCUMENT AUDIT ARCHIVE</div>
@@ -787,7 +1131,8 @@ const ManagerDocumentsPage = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

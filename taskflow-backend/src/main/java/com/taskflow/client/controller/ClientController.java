@@ -9,7 +9,9 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import com.taskflow.security.UserPrincipal;
 
 import java.util.List;
 
@@ -89,5 +91,26 @@ public class ClientController {
     public ResponseEntity<ApiResponse<Void>> softDeleteClient(@PathVariable Long id) {
         clientService.softDeleteClient(id);
         return ResponseEntity.ok(ApiResponse.ok("Client deleted successfully", null));
+    }
+
+    @PostMapping(value = {"/{id}/provision-account", "/{id}/reset-password"})
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Provision or reset client portal login credentials with temporary password (Admin only)")
+    public ResponseEntity<ApiResponse<ClientDto.ClientResponse>> provisionAccount(
+            @PathVariable Long id,
+            @Valid @RequestBody ClientDto.ProvisionAccountRequest request
+    ) {
+        ClientDto.ClientResponse response = clientService.provisionOrResetPortalAccount(id, request.getPassword());
+        return ResponseEntity.ok(ApiResponse.ok("Client portal credentials provisioned successfully", response));
+    }
+
+    @GetMapping("/my-organization")
+    @PreAuthorize("hasRole('CLIENT')")
+    @Operation(summary = "Get current authenticated client organization profile")
+    public ResponseEntity<ApiResponse<ClientDto.ClientResponse>> getMyOrganization(
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        ClientDto.ClientResponse response = clientService.getMyOrganization(principal.getId());
+        return ResponseEntity.ok(ApiResponse.ok(response));
     }
 }

@@ -21,6 +21,7 @@ import AdminProjectsPage from './pages/admin/AdminProjectsPage';
 import ManagerDashboard from './pages/manager/ManagerDashboard';
 import ManagerProjectsPage from './pages/manager/ManagerProjectsPage';
 import ProjectDetailsPage from './pages/manager/ProjectDetailsPage';
+import ManagerTeamPage from './pages/manager/ManagerTeamPage';
 import ManagerTasksPage from './pages/manager/ManagerTasksPage';
 import ManagerKanbanPage from './pages/manager/ManagerKanbanPage';
 import ManagerMilestonesPage from './pages/manager/ManagerMilestonesPage';
@@ -28,7 +29,9 @@ import ManagerBugsPage from './pages/manager/ManagerBugsPage';
 import ManagerChangeRequestsPage from './pages/manager/ManagerChangeRequestsPage';
 import ManagerDocumentsPage from './pages/manager/ManagerDocumentsPage';
 import ManagerMessagesPage from './pages/manager/ManagerMessagesPage';
+import ManagerSettingsPage from './pages/manager/ManagerSettingsPage';
 import MemberDashboard from './pages/member/MemberDashboard';
+import MemberProjectsPage from './pages/member/MemberProjectsPage';
 import MemberTasksPage from './pages/member/MemberTasksPage';
 import MemberKanbanPage from './pages/member/MemberKanbanPage';
 import MemberBugsPage from './pages/member/MemberBugsPage';
@@ -40,9 +43,13 @@ import AuditLogsPage from './pages/admin/AuditLogsPage';
 import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 import ClientDashboard from './pages/client/ClientDashboard';
 import ClientProjectsPage from './pages/client/ClientProjectsPage';
+import ClientDeliverablesPage from './pages/client/ClientDeliverablesPage';
 import ClientChangeRequestsPage from './pages/client/ClientChangeRequestsPage';
+import ClientFeedbackPage from './pages/client/ClientFeedbackPage';
+import ClientInvoicesPage from './pages/client/ClientInvoicesPage';
 import ClientDocumentsPage from './pages/client/ClientDocumentsPage';
 import ClientMessagesPage from './pages/client/ClientMessagesPage';
+import ClientSettingsPage from './pages/client/ClientSettingsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
@@ -71,6 +78,7 @@ function App() {
             <Route path="roles" element={<RoleCategoriesPage />} />
             <Route path="clients" element={<ClientsPage />} />
             <Route path="projects" element={<AdminProjectsPage />} />
+            <Route path="projects/:id" element={<ProjectDetailsPage />} />
             <Route path="reports" element={<AdminReportsPage />} />
             <Route path="audit" element={<AuditLogsPage />} />
             <Route path="settings" element={<AdminSettingsPage />} />
@@ -90,6 +98,7 @@ function App() {
             <Route path="dashboard" element={<ManagerDashboard />} />
             <Route path="projects" element={<ManagerProjectsPage />} />
             <Route path="projects/:id" element={<ProjectDetailsPage />} />
+            <Route path="team" element={<ManagerTeamPage />} />
             <Route path="tasks" element={<ManagerTasksPage />} />
             <Route path="kanban" element={<ManagerKanbanPage />} />
             <Route path="milestones" element={<ManagerMilestonesPage />} />
@@ -99,6 +108,7 @@ function App() {
             <Route path="messages" element={<ManagerMessagesPage />} />
             <Route path="time-reports" element={<ManagerTimesheetsPage />} />
             <Route path="timesheets" element={<ManagerTimesheetsPage />} />
+            <Route path="settings" element={<ManagerSettingsPage />} />
             <Route path="*" element={<ManagerDashboard />} />
           </Route>
 
@@ -113,6 +123,7 @@ function App() {
           >
             <Route index element={<Navigate to="/member/dashboard" replace />} />
             <Route path="dashboard" element={<MemberDashboard />} />
+            <Route path="projects" element={<MemberProjectsPage />} />
             <Route path="tasks" element={<MemberTasksPage />} />
             <Route path="kanban" element={<MemberKanbanPage />} />
             <Route path="bugs" element={<MemberBugsPage />} />
@@ -134,9 +145,13 @@ function App() {
             <Route index element={<Navigate to="/client/dashboard" replace />} />
             <Route path="dashboard" element={<ClientDashboard />} />
             <Route path="projects" element={<ClientProjectsPage />} />
+            <Route path="deliverables" element={<ClientDeliverablesPage />} />
             <Route path="change-requests" element={<ClientChangeRequestsPage />} />
+            <Route path="feedback" element={<ClientFeedbackPage />} />
+            <Route path="invoices" element={<ClientInvoicesPage />} />
             <Route path="documents" element={<ClientDocumentsPage />} />
             <Route path="messages" element={<ClientMessagesPage />} />
+            <Route path="settings" element={<ClientSettingsPage />} />
             <Route path="*" element={<ClientDashboard />} />
           </Route>
 

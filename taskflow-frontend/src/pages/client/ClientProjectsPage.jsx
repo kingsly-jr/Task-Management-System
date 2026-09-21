@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../../api/client';
 import {
   FolderKanban,
@@ -13,7 +14,8 @@ import {
   ChevronUp,
   Search,
   ExternalLink,
-  ShieldCheck
+  ShieldCheck,
+  Star
 } from 'lucide-react';
 
 const ClientProjectsPage = () => {
@@ -193,14 +195,37 @@ const ClientProjectsPage = () => {
                     )}
                   </div>
 
-                  <button
-                    onClick={() => toggleExpand(p.projectId)}
-                    className="btn btn-secondary"
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
-                  >
-                    {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                    {isExpanded ? 'Hide Deliverables' : 'View Milestones & Roadmap'}
-                  </button>
+                  <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                    {p.status === 'COMPLETED' && (
+                      <Link
+                        to="/client/feedback"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          fontSize: '0.82rem',
+                          fontWeight: 700,
+                          backgroundColor: '#1e1e1e',
+                          color: '#ffffff',
+                          padding: '0.55rem 0.95rem',
+                          borderRadius: '6px',
+                          textDecoration: 'none',
+                          boxShadow: '0 2px 5px rgba(0,0,0,0.15)'
+                        }}
+                      >
+                        <Star size={13} fill="#ffffff" />
+                        <span>Give Completion Feedback</span>
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => toggleExpand(p.projectId)}
+                      className="btn btn-secondary"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
+                    >
+                      {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      {isExpanded ? 'Hide Deliverables' : 'View Milestones & Roadmap'}
+                    </button>
+                  </div>
                 </div>
 
                 {/* Key Metrics Grid */}
@@ -243,7 +268,38 @@ const ClientProjectsPage = () => {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#666666' }}>
                       <Clock size={14} color="#2b2b2b" />
-                      <span>Target End: <strong>{p.endDate || '—'}</strong></span>
+                      <span>Target End: <strong>{p.endDate || p.expectedEndDate || '—'}</strong></span>
+                    </div>
+                  </div>
+
+                  {/* Financial Settlement */}
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem', fontSize: '0.8rem' }}>
+                      <span style={{ fontWeight: 700, color: '#2b2b2b' }}>Contract Billing</span>
+                      <span style={{
+                        fontSize: '0.7rem',
+                        fontWeight: 700,
+                        padding: '0.1rem 0.4rem',
+                        borderRadius: '4px',
+                        backgroundColor: (p.remainingAmount !== null && p.remainingAmount !== undefined ? Number(p.remainingAmount) : Math.max(0, (Number(p.budget) || 0) - (Number(p.paidAmount) || 0))) === 0 && Number(p.budget) > 0 ? '#e6fcf5' : Number(p.paidAmount) > 0 ? '#e7f5ff' : '#f1f1f1',
+                        color: (p.remainingAmount !== null && p.remainingAmount !== undefined ? Number(p.remainingAmount) : Math.max(0, (Number(p.budget) || 0) - (Number(p.paidAmount) || 0))) === 0 && Number(p.budget) > 0 ? '#0ca678' : Number(p.paidAmount) > 0 ? '#1971c2' : '#666666'
+                      }}>
+                        {(p.remainingAmount !== null && p.remainingAmount !== undefined ? Number(p.remainingAmount) : Math.max(0, (Number(p.budget) || 0) - (Number(p.paidAmount) || 0))) === 0 && Number(p.budget) > 0 ? '✓ Settled' : Number(p.paidAmount) > 0 ? 'Partial' : 'Pending'}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '0.76rem', color: '#666666', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Budget:</span>
+                        <strong style={{ color: '#2b2b2b' }}>${p.budget ? Number(p.budget).toLocaleString() : 'N/A'}</strong>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Paid:</span>
+                        <strong style={{ color: '#2b8a3e' }}>${p.paidAmount !== null && p.paidAmount !== undefined ? Number(p.paidAmount).toLocaleString() : '0'}</strong>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Balance Due:</span>
+                        <strong style={{ color: Number(p.remainingAmount) > 0 ? '#d9480f' : '#2b2b2b' }}>${p.remainingAmount !== null && p.remainingAmount !== undefined ? Number(p.remainingAmount).toLocaleString() : (p.budget ? Number(p.budget - (p.paidAmount || 0)).toLocaleString() : '0')}</strong>
+                      </div>
                     </div>
                   </div>
                 </div>

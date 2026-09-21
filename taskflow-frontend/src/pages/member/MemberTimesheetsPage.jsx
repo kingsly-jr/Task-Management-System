@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import {
   Clock,
@@ -58,6 +59,18 @@ const MemberTimesheetsPage = () => {
   useEffect(() => {
     fetchInitialData();
   }, []);
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (modalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [modalOpen]);
 
   // Timer interval handling
   useEffect(() => {
@@ -572,42 +585,90 @@ const MemberTimesheetsPage = () => {
         )}
       </div>
 
-      {/* Log Work Modal */}
-      {modalOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 100,
-          padding: '1rem'
-        }}>
-          <div style={{
-            backgroundColor: '#ffffff',
-            borderRadius: '8px',
-            width: '100%',
-            maxWidth: '520px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-            overflow: 'hidden'
-          }}>
+      {/* Log Work Modal via Portal */}
+      {modalOpen && createPortal(
+        <div
+          onClick={() => setModalOpen(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="card animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '14px',
+              width: '100%',
+              maxWidth: '540px',
+              margin: 'auto',
+              maxHeight: 'min(90vh, 720px)',
+              overflowY: 'auto',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.45)',
+              padding: '2rem'
+            }}
+          >
             <div style={{
-              padding: '1.25rem 1.5rem',
-              borderBottom: '1px solid #d4d4d4',
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'center'
+              alignItems: 'flex-start',
+              marginBottom: '1.5rem',
+              borderBottom: '1px solid #e5e5e5',
+              paddingBottom: '1rem'
             }}>
-              <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700 }}>
-                {editingLog ? 'Edit Timesheet Entry' : 'Log Daily Work'}
-              </h3>
+              <div>
+                <span style={{
+                  display: 'inline-block',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  color: '#444444',
+                  backgroundColor: '#f2f2f2',
+                  border: '1px solid #e5e5e5',
+                  padding: '0.2rem 0.55rem',
+                  borderRadius: '4px',
+                  marginBottom: '0.4rem'
+                }}>
+                  Time Tracking &amp; Worklog
+                </span>
+                <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 800, color: '#1e1e1e', letterSpacing: '-0.02em' }}>
+                  {editingLog ? 'Edit Timesheet Entry' : 'Log Daily Work'}
+                </h3>
+              </div>
               <button
+                type="button"
                 onClick={() => setModalOpen(false)}
-                style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: '#888' }}
+                style={{
+                  background: '#f2f2f2',
+                  border: 'none',
+                  fontSize: '1.1rem',
+                  cursor: 'pointer',
+                  color: '#444444',
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background 0.2s',
+                  flexShrink: 0
+                }}
+                title="Close modal"
               >
                 ✕
               </button>
@@ -807,7 +868,8 @@ const MemberTimesheetsPage = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

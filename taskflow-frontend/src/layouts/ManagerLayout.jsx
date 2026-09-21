@@ -15,7 +15,8 @@ import {
   Clock,
   LogOut,
   Briefcase,
-  MessageSquare
+  MessageSquare,
+  Settings
 } from 'lucide-react';
 
 const ManagerLayout = () => {
@@ -25,14 +26,8 @@ const ManagerLayout = () => {
     { name: 'Dashboard', path: '/manager/dashboard', icon: LayoutDashboard },
     { name: 'Assigned Projects', path: '/manager/projects', icon: FolderKanban },
     { name: 'Project Team', path: '/manager/team', icon: Users2 },
-    { name: 'Tasks', path: '/manager/tasks', icon: CheckSquare2 },
-    { name: 'Kanban Board', path: '/manager/kanban', icon: Kanban },
-    { name: 'Milestones', path: '/manager/milestones', icon: Flag },
-    { name: 'Bugs & Retest', path: '/manager/bugs', icon: Bug },
-    { name: 'Change Requests', path: '/manager/change-requests', icon: GitPullRequest },
-    { name: 'Documents', path: '/manager/documents', icon: FileText },
-    { name: 'Messages', path: '/manager/messages', icon: MessageSquare },
     { name: 'Time Tracking', path: '/manager/time-reports', icon: Clock },
+    { name: 'Settings', path: '/manager/settings', icon: Settings },
   ];
 
   return (

@@ -93,6 +93,20 @@ public class ClientDto {
         public void setStatus(String status) { this.status = status; }
     }
 
+    public static class ProvisionAccountRequest {
+        @NotBlank(message = "Password cannot be blank")
+        private String password;
+
+        public ProvisionAccountRequest() {}
+
+        public ProvisionAccountRequest(String password) {
+            this.password = password;
+        }
+
+        public String getPassword() { return password; }
+        public void setPassword(String password) { this.password = password; }
+    }
+
     public static class ClientResponse {
         private Long clientId;
         private String companyName;
@@ -103,7 +117,8 @@ public class ClientDto {
         private String country;
         private String status;
         private Long userId;
-        private String temporaryPassword; // Only returned on creation
+        private boolean hasPortalAccount;
+        private String temporaryPassword; // Only returned on creation or reset
         private long activeProjectsCount;
         private Instant createdAt;
         private Instant updatedAt;
@@ -123,6 +138,7 @@ public class ClientDto {
             this.country = country;
             this.status = status;
             this.userId = userId;
+            this.hasPortalAccount = (userId != null);
             this.temporaryPassword = temporaryPassword;
             this.activeProjectsCount = activeProjectsCount;
             this.createdAt = createdAt;
@@ -146,7 +162,13 @@ public class ClientDto {
         public String getStatus() { return status; }
         public void setStatus(String status) { this.status = status; }
         public Long getUserId() { return userId; }
-        public void setUserId(Long userId) { this.userId = userId; }
+        public void setUserId(Long userId) {
+            this.userId = userId;
+            this.hasPortalAccount = (userId != null);
+        }
+        public boolean isHasPortalAccount() { return hasPortalAccount; }
+        public boolean getHasPortalAccount() { return hasPortalAccount; }
+        public void setHasPortalAccount(boolean hasPortalAccount) { this.hasPortalAccount = hasPortalAccount; }
         public String getTemporaryPassword() { return temporaryPassword; }
         public void setTemporaryPassword(String temporaryPassword) { this.temporaryPassword = temporaryPassword; }
         public long getActiveProjectsCount() { return activeProjectsCount; }

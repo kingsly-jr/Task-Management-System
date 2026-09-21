@@ -26,6 +26,7 @@ const roleConfigs = {
     badge: 'SUPER ADMIN ROOT',
     icon: ShieldCheck,
     buttonText: 'Sign In to Admin Portal',
+    placeholder: 'admin@taskflow.com',
     defaultEmail: 'admin@taskflow.com',
     defaultPassword: 'admin123',
     demoAccounts: [
@@ -40,10 +41,11 @@ const roleConfigs = {
     badge: 'DELIVERY LEAD',
     icon: Briefcase,
     buttonText: 'Sign In to Project Manager',
+    placeholder: 'manager@taskflow.com',
     defaultEmail: 'manager@taskflow.com',
     defaultPassword: 'manager123',
     demoAccounts: [
-      { label: 'Project Manager', email: 'manager@taskflow.com', password: 'manager123', sub: 'Delivery & Sprints' }
+      { label: 'Lead Manager', email: 'manager@taskflow.com', password: 'manager123', sub: 'Project Delivery' }
     ]
   },
   TEAM_MEMBER: {
@@ -54,11 +56,11 @@ const roleConfigs = {
     badge: 'ENGINEERING & QA',
     icon: Users2,
     buttonText: 'Sign In as Team Member',
-    defaultEmail: 'developer@taskflow.com',
-    defaultPassword: 'dev123',
+    placeholder: 'member@taskflow.com',
+    defaultEmail: 'member@taskflow.com',
+    defaultPassword: 'member123',
     demoAccounts: [
-      { label: 'Developer', email: 'developer@taskflow.com', password: 'dev123', sub: 'Full Stack Dev' },
-      { label: 'QA Tester', email: 'tester@taskflow.com', password: 'qa123', sub: 'Quality Assurance' }
+      { label: 'Senior Dev', email: 'member@taskflow.com', password: 'member123', sub: 'Engineering & QA' }
     ]
   },
   CLIENT: {
@@ -69,10 +71,11 @@ const roleConfigs = {
     badge: 'CLIENT STAKEHOLDER',
     icon: Building2,
     buttonText: 'Sign In to Client Portal',
-    defaultEmail: 'client@taskflow.com',
+    placeholder: 'client@acme.com',
+    defaultEmail: 'client@acme.com',
     defaultPassword: 'client123',
     demoAccounts: [
-      { label: 'Client Contact', email: 'client@taskflow.com', password: 'client123', sub: 'Deliverables & Scope' }
+      { label: 'Acme Client', email: 'client@acme.com', password: 'client123', sub: 'Executive Sponsor' }
     ]
   }
 };
@@ -217,50 +220,68 @@ const LoginPage = () => {
             </p>
           </div>
 
-          {/* Role-Specific Demo Credentials Box */}
-          <div style={{
-            backgroundColor: '#ffffff',
-            border: '1px solid #d4d4d4',
-            borderRadius: '8px',
-            padding: '0.85rem 1rem',
-            marginBottom: '1.5rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem' }}>
-              <Sparkles size={14} color="#1e1e1e" />
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.04em', color: '#1e1e1e' }}>
-                DEMO CREDENTIALS:
-              </span>
-            </div>
+          {/* Role-Specific Demo Credentials Box or Instruction Notice */}
+          {currentConfig.demoAccounts && currentConfig.demoAccounts.length > 0 ? (
+            <div style={{
+              backgroundColor: '#ffffff',
+              border: '1px solid #d4d4d4',
+              borderRadius: '8px',
+              padding: '0.85rem 1rem',
+              marginBottom: '1.5rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem' }}>
+                <Sparkles size={14} color="#1e1e1e" />
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.04em', color: '#1e1e1e' }}>
+                  ADMIN CREDENTIALS:
+                </span>
+              </div>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-              {currentConfig.demoAccounts.map(demo => (
-                <button
-                  key={demo.email}
-                  type="button"
-                  onClick={() => handleAutofill(demo)}
-                  title={`Autofill ${demo.label}: ${demo.email}`}
-                  style={{
-                    padding: '0.35rem 0.65rem',
-                    fontSize: '0.78rem',
-                    fontWeight: 600,
-                    borderRadius: '6px',
-                    backgroundColor: email === demo.email ? '#1e1e1e' : '#f4f4f4',
-                    color: email === demo.email ? '#ffffff' : '#1e1e1e',
-                    border: '1px solid',
-                    borderColor: email === demo.email ? '#1e1e1e' : '#d4d4d4',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.35rem',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  <span>{demo.label}</span>
-                  <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>({demo.password})</span>
-                </button>
-              ))}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                {currentConfig.demoAccounts.map(demo => (
+                  <button
+                    key={demo.email}
+                    type="button"
+                    onClick={() => handleAutofill(demo)}
+                    title={`Autofill ${demo.label}: ${demo.email}`}
+                    style={{
+                      padding: '0.35rem 0.65rem',
+                      fontSize: '0.78rem',
+                      fontWeight: 600,
+                      borderRadius: '6px',
+                      backgroundColor: email === demo.email ? '#1e1e1e' : '#f4f4f4',
+                      color: email === demo.email ? '#ffffff' : '#1e1e1e',
+                      border: '1px solid',
+                      borderColor: email === demo.email ? '#1e1e1e' : '#d4d4d4',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <span>{demo.label}</span>
+                    <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>({demo.password})</span>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div style={{
+              backgroundColor: '#fbfbfb',
+              border: '1px dashed #d4d4d4',
+              borderRadius: '8px',
+              padding: '0.85rem 1rem',
+              marginBottom: '1.5rem',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '0.65rem'
+            }}>
+              <Lock size={15} color="#666666" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
+              <div style={{ fontSize: '0.8rem', color: '#666666', lineHeight: 1.45 }}>
+                Please enter the credentials provisioned by your System Administrator. First-time users will be prompted to set a permanent password.
+              </div>
+            </div>
+          )}
 
           {/* Error Alert */}
           {error && (
@@ -293,7 +314,7 @@ const LoginPage = () => {
                   type="email"
                   required
                   className="input-field"
-                  placeholder="name@taskflow.com"
+                  placeholder={currentConfig.placeholder || 'name@taskflow.com'}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   style={{ paddingLeft: '2.5rem', width: '100%' }}

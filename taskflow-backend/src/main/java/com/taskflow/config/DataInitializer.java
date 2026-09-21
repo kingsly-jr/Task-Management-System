@@ -2,6 +2,10 @@ package com.taskflow.config;
 
 import com.taskflow.audit.repository.AuditLogRepository;
 import com.taskflow.audit.service.AuditLogService;
+import com.taskflow.client.entity.Client;
+import com.taskflow.client.repository.ClientRepository;
+import com.taskflow.project.entity.Project;
+import com.taskflow.project.repository.ProjectRepository;
 import com.taskflow.role.entity.Role;
 import com.taskflow.role.entity.RoleCategory;
 import com.taskflow.role.repository.RoleCategoryRepository;
@@ -15,6 +19,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
 @Component
 public class DataInitializer implements CommandLineRunner {
 
@@ -26,31 +34,37 @@ public class DataInitializer implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final AuditLogRepository auditLogRepository;
     private final AuditLogService auditLogService;
+    private final ClientRepository clientRepository;
+    private final ProjectRepository projectRepository;
 
     public DataInitializer(RoleRepository roleRepository,
                            RoleCategoryRepository roleCategoryRepository,
                            UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
                            AuditLogRepository auditLogRepository,
-                           AuditLogService auditLogService) {
+                           AuditLogService auditLogService,
+                           ClientRepository clientRepository,
+                           ProjectRepository projectRepository) {
         this.roleRepository = roleRepository;
         this.roleCategoryRepository = roleCategoryRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.auditLogRepository = auditLogRepository;
         this.auditLogService = auditLogService;
+        this.clientRepository = clientRepository;
+        this.projectRepository = projectRepository;
     }
 
     @Override
     @Transactional
     public void run(String... args) {
-        log.info("Starting TaskFlow Seed: Roles, Categories, and Admin...");
+        log.info("Starting TaskFlow Seed: Roles, Categories, Users, and Financial Projects...");
 
         // 1. System Roles
         Role adminRole = getOrCreateRole("ADMIN", "ADMIN", "Administrator with full company-wide management permissions");
-        getOrCreateRole("PROJECT_MANAGER", "PROJECT_MANAGER", "Project Manager managing projects, teams, milestones and tasks");
-        getOrCreateRole("TEAM_MEMBER", "TEAM_MEMBER", "Team member executing tasks, reporting progress, and logging time");
-        getOrCreateRole("CLIENT", "CLIENT", "Client viewing assigned projects, progress, milestones, and submitting change requests");
+        Role pmRole = getOrCreateRole("PROJECT_MANAGER", "PROJECT_MANAGER", "Project Manager managing projects, teams, milestones and tasks");
+        Role memberRole = getOrCreateRole("TEAM_MEMBER", "TEAM_MEMBER", "Team member executing tasks, reporting progress, and logging time");
+        Role clientRole = getOrCreateRole("CLIENT", "CLIENT", "Client viewing assigned projects, progress, milestones, and submitting change requests");
 
         // 2. Role Categories
         getOrCreateCategory("Full Stack Developer", "FULL_STACK_DEVELOPER", "Develops frontend and backend systems");
@@ -61,25 +75,78 @@ public class DataInitializer implements CommandLineRunner {
         getOrCreateCategory("DevOps Engineer", "DEVOPS_ENGINEER", "Manages CI/CD pipelines, cloud, and infrastructure");
         getOrCreateCategory("Digital Marketing", "DIGITAL_MARKETING", "Coordinates online campaigns and product growth");
 
-        // 3. Admin User (ID=1) — only default account seeded
-        if (!userRepository.existsByEmailIgnoreCase("admin@taskflow.com")) {
-            User admin = User.builder()
-                    .email("admin@taskflow.com")
-                    .passwordHash(passwordEncoder.encode("admin123"))
-                    .firstName("System")
-                    .lastName("Admin")
-                    .role(adminRole)
-                    .roleCategory(null)
-                    .phone("+1-555-0100")
-                    .status("ACTIVE")
-                    .isFirstLogin(false)
-                    .isDeleted(false)
-                    .build();
-            userRepository.save(admin);
-            log.info("Created Admin User: admin@taskflow.com (ID will be 1)");
+        // 3. Guaranteed Users
+        upsertUser("admin@taskflow.com", "admin123", "System", "Admin", adminRole, null, "+1-555-0100");
+        User pm = upsertUser("manager@taskflow.com", "manager123", "Alex", "Morgan", pmRole, null, "+1-555-0101");
+        upsertUser("member@taskflow.com", "member123", "Jordan", "Lee", memberRole, null, "+1-555-0102");
+        User clientUser = upsertUser("client@acme.com", "client123", "Sarah", "Connor", clientRole, null, "+1-555-0103");
+
+        // 4. Guaranteed Client Entity
+        Client client = clientRepository.findByEmailIgnoreCaseAndIsDeletedFalse("client@acme.com").orElse(null);
+        if (client == null) {
+            client = new Client();
+            client.setCompanyName("Acme Corporation");
+            client.setContactPerson("Sarah Connor");
+            client.setEmail("client@acme.com");
+            client.setPhone("+1-555-0103");
+            client.setAddress("100 Enterprise Blvd, Tech District");
+            client.setCountry("United States");
+            client.setStatus("ACTIVE");
+            client.setDeleted(false);
+            client.setUser(clientUser);
+            client = clientRepository.save(client);
+            log.info("Created Client entity: Acme Corporation");
+        } else {
+            if (client.getUser() == null) {
+                client.setUser(clientUser);
+                client = clientRepository.save(client);
+            }
         }
 
-        // 4. Initial Audit Logs
+        // 5. Ensure Projects have budget, paid, remaining
+        List<Project> existingProjects = projectRepository.findByIsDeletedFalse();
+        if (existingProjects.isEmpty()) {
+            Project demoProject = Project.builder()
+                    .projectCode("PRJ-0001")
+                    .projectName("Acme ERP Modernization")
+                    .description("Enterprise resource planning software modern architecture migration and real-time ledger overhaul.")
+                    .client(client)
+                    .projectManager(pm)
+                    .startDate(LocalDate.now().minusMonths(1))
+                    .expectedEndDate(LocalDate.now().plusMonths(3))
+                    .budget(new BigDecimal("75000.00"))
+                    .paidAmount(new BigDecimal("30000.00"))
+                    .remainingAmount(new BigDecimal("45000.00"))
+                    .status("IN_PROGRESS")
+                    .priority("HIGH")
+                    .progress(40)
+                    .isDeleted(false)
+                    .build();
+            projectRepository.save(demoProject);
+            log.info("Created Seed Project: PRJ-0001 - Acme ERP Modernization (Budget: $75,000, Paid: $30,000, Remaining: $45,000)");
+        } else {
+            for (Project p : existingProjects) {
+                boolean changed = false;
+                if (p.getBudget() == null) {
+                    p.setBudget(new BigDecimal("75000.00"));
+                    changed = true;
+                }
+                if (p.getPaidAmount() == null) {
+                    p.setPaidAmount(new BigDecimal("30000.00"));
+                    changed = true;
+                }
+                if (p.getRemainingAmount() == null) {
+                    p.setRemainingAmount(p.getBudget().subtract(p.getPaidAmount()));
+                    changed = true;
+                }
+                if (changed) {
+                    projectRepository.save(p);
+                    log.info("Updated Project {}: Budget={}, Paid={}, Remaining={}", p.getProjectCode(), p.getBudget(), p.getPaidAmount(), p.getRemainingAmount());
+                }
+            }
+        }
+
+        // 6. Initial Audit Logs
         if (auditLogRepository.count() == 0) {
             auditLogService.log(
                     "system@taskflow.internal", "SYSTEM", "SYSTEM", "INITIALIZE",
@@ -98,22 +165,41 @@ public class DataInitializer implements CommandLineRunner {
                     "User", "1", "Super Administrator root account created for admin@taskflow.com",
                     "127.0.0.1", "SUCCESS", "{\"userId\":1,\"email\":\"admin@taskflow.com\"}"
             );
-
-            auditLogService.log(
-                    "admin@taskflow.com", "ADMIN", "AUTH", "LOGIN",
-                    "Session", "1", "Super Administrator session authenticated via Web UI",
-                    "127.0.0.1", "SUCCESS", "{\"client\":\"Chrome / Windows 11\"}"
-            );
-
-            auditLogService.log(
-                    "admin@taskflow.com", "ADMIN", "SECURITY", "POLICY_CHECK",
-                    "SecurityContext", "1", "RBAC security context and JWT token validation verified",
-                    "127.0.0.1", "SUCCESS", "{\"algorithm\":\"HS256\",\"duration\":\"24h\"}"
-            );
             log.info("Seeded initial audit governance logs");
         }
 
-        log.info("TaskFlow Seed Completed. Login: admin@taskflow.com / admin123");
+        log.info("TaskFlow Seed Completed. Demo Accounts: admin@taskflow.com/admin123, manager@taskflow.com/manager123, member@taskflow.com/member123, client@acme.com/client123");
+    }
+
+    private User upsertUser(String email, String rawPassword, String firstName, String lastName, Role role, RoleCategory category, String phone) {
+        User user = userRepository.findByEmailIgnoreCase(email).orElse(null);
+        if (user == null) {
+            user = User.builder()
+                    .email(email)
+                    .passwordHash(passwordEncoder.encode(rawPassword))
+                    .firstName(firstName)
+                    .lastName(lastName)
+                    .role(role)
+                    .roleCategory(category)
+                    .phone(phone)
+                    .status("ACTIVE")
+                    .isFirstLogin(false)
+                    .isDeleted(false)
+                    .build();
+            user = userRepository.save(user);
+            log.info("Created Seed User: {} / {}", email, rawPassword);
+        } else {
+            user.setPasswordHash(passwordEncoder.encode(rawPassword));
+            user.setFirstName(firstName);
+            user.setLastName(lastName);
+            user.setRole(role);
+            user.setStatus("ACTIVE");
+            user.setDeleted(false);
+            user.setFirstLogin(false);
+            user = userRepository.save(user);
+            log.info("Updated Seed User: {} password and active status verified", email);
+        }
+        return user;
     }
 
     private Role getOrCreateRole(String roleName, String roleCode, String description) {

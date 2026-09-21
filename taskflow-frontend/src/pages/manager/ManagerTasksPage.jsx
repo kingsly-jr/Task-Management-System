@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../../api/client';
 import TaskDetailModal from '../../components/TaskDetailModal';
 import {
@@ -54,6 +55,17 @@ const ManagerTasksPage = () => {
       fetchProjectMilestones(selectedProjectId);
     }
   }, [selectedProjectId, search, statusFilter, priorityFilter]);
+
+  useEffect(() => {
+    if (showAddModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showAddModal]);
 
   const fetchProjects = async () => {
     try {
@@ -405,9 +417,38 @@ const ManagerTasksPage = () => {
       </div>
 
       {/* MODAL: CREATE TASK */}
-      {showAddModal && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '1rem' }}>
-          <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', maxWidth: '560px', width: '100%', padding: '1.5rem', border: '1px solid #d4d4d4', maxHeight: '90vh', overflowY: 'auto' }}>
+      {showAddModal && createPortal(
+        <div
+          onClick={() => setShowAddModal(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '14px',
+              maxWidth: '580px',
+              width: '100%',
+              padding: '2rem',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              maxHeight: '90vh',
+              overflowY: 'auto'
+            }}
+          >
             <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#2b2b2b', margin: '0 0 0.4rem 0' }}>
               Create Sprint Task
             </h2>
@@ -556,7 +597,8 @@ const ManagerTasksPage = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Task Details Drawer Modal */}

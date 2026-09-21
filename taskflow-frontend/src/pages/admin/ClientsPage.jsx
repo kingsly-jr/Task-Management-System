@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../../api/client';
 import {
   Building2,
@@ -45,11 +46,24 @@ const ClientsPage = () => {
     phone: '',
     address: '',
     country: '',
+    status: 'ACTIVE',
     createPortalAccount: true,
     initialPassword: '',
   });
 
   const [provisionPassword, setProvisionPassword] = useState('');
+
+  const anyModalOpen = showAddModal || showEditModal || showCredentialsModal || showProvisionModal;
+  useEffect(() => {
+    if (anyModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [anyModalOpen]);
 
   useEffect(() => {
     fetchClients();
@@ -217,7 +231,7 @@ const ClientsPage = () => {
   const clientList = Array.isArray(clients) ? clients : [];
   const totalClients = clientList.length;
   const activeClients = clientList.filter((c) => c.status === 'ACTIVE').length;
-  const portalAccessCount = clientList.filter((c) => c.hasPortalAccount).length;
+  const portalAccessCount = clientList.filter((c) => c.hasPortalAccount || c.userId != null).length;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -395,7 +409,7 @@ const ClientsPage = () => {
                     </td>
 
                     <td style={{ padding: '0.85rem 1rem' }}>
-                      {client.hasPortalAccount ? (
+                      {(client.hasPortalAccount || client.userId != null) ? (
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', padding: '0.25rem 0.55rem', backgroundColor: '#eef8ee', color: '#2b8a3e', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
                           <ShieldCheck size={12} /> Active Account
                         </span>
@@ -439,7 +453,7 @@ const ClientsPage = () => {
 
                     <td style={{ padding: '0.85rem 1rem', textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
-                        {client.hasPortalAccount && (
+                        {(client.hasPortalAccount || client.userId != null) && (
                           <button
                             title="Reset Portal Password"
                             onClick={() => handleOpenProvisionModal(client)}
@@ -473,13 +487,59 @@ const ClientsPage = () => {
       </div>
 
       {/* MODAL: ADD CLIENT */}
-      {showAddModal && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '1rem' }}>
-          <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', maxWidth: '520px', width: '100%', padding: '1.5rem', border: '1px solid #d4d4d4', maxHeight: '90vh', overflowY: 'auto' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#2b2b2b', margin: '0 0 0.5rem 0' }}>Register Client Organization</h2>
-            <p style={{ fontSize: '0.82rem', color: '#666666', margin: '0 0 1.25rem 0' }}>
-              Add organization details and optionally create credentials for Client Portal self-service.
-            </p>
+      {showAddModal && createPortal(
+        <div
+          onClick={() => setShowAddModal(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="card animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '14px',
+              maxWidth: '560px',
+              width: '100%',
+              margin: 'auto',
+              maxHeight: 'min(90vh, 740px)',
+              overflowY: 'auto',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.45)',
+              padding: '2rem'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+              <div>
+                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#1e1e1e', margin: '0 0 0.35rem 0', letterSpacing: '-0.02em' }}>
+                  Register Client Organization
+                </h2>
+                <p style={{ fontSize: '0.82rem', color: '#666666', margin: 0 }}>
+                  Add organization details and optionally create credentials for Client Portal self-service.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAddModal(false)}
+                style={{ background: '#f2f2f2', border: 'none', fontSize: '1.1rem', cursor: 'pointer', color: '#444444', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                ✕
+              </button>
+            </div>
 
             <form onSubmit={handleCreateClient} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
@@ -607,15 +667,66 @@ const ClientsPage = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* MODAL: EDIT CLIENT */}
-      {showEditModal && selectedClient && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '1rem' }}>
-          <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', maxWidth: '500px', width: '100%', padding: '1.5rem', border: '1px solid #d4d4d4' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#2b2b2b', margin: '0 0 0.5rem 0' }}>Edit Client Details</h2>
-            <form onSubmit={handleUpdateClient} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+      {showEditModal && selectedClient && createPortal(
+        <div
+          onClick={() => setShowEditModal(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="card animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '14px',
+              maxWidth: '520px',
+              width: '100%',
+              margin: 'auto',
+              maxHeight: 'min(90vh, 720px)',
+              overflowY: 'auto',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.45)',
+              padding: '2rem'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+              <div>
+                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#1e1e1e', margin: 0, letterSpacing: '-0.02em' }}>
+                  Edit Client Details
+                </h2>
+                <p style={{ fontSize: '0.82rem', color: '#666666', margin: '0.25rem 0 0 0' }}>
+                  Update organization and contact information.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowEditModal(false)}
+                style={{ background: '#f2f2f2', border: 'none', fontSize: '1.1rem', cursor: 'pointer', color: '#444444', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateClient} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>Company Name *</label>
                 <input
@@ -690,30 +801,88 @@ const ClientsPage = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* MODAL: PROVISION / RESET PORTAL ACCOUNT */}
-      {showProvisionModal && selectedClient && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '1rem' }}>
-          <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', maxWidth: '440px', width: '100%', padding: '1.5rem', border: '1px solid #d4d4d4' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#2b2b2b', margin: '0 0 0.5rem 0' }}>
-              {selectedClient.hasPortalAccount ? 'Reset Client Portal Password' : 'Enable Client Portal Access'}
-            </h2>
-            <p style={{ fontSize: '0.82rem', color: '#666666', margin: '0 0 1rem 0' }}>
-              Generate credentials for <strong>{selectedClient.companyName}</strong> ({selectedClient.email}).
-            </p>
-
-            <form onSubmit={handleProvisionAccount} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      {showProvisionModal && selectedClient && createPortal(
+        <div
+          onClick={() => setShowProvisionModal(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="card animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '14px',
+              maxWidth: '460px',
+              width: '100%',
+              margin: 'auto',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.45)',
+              padding: '2rem'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-                  <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2b2b2b' }}>Temporary Password</label>
+                <span style={{
+                  display: 'inline-block',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  color: '#444444',
+                  backgroundColor: '#f2f2f2',
+                  border: '1px solid #e5e5e5',
+                  padding: '0.2rem 0.55rem',
+                  borderRadius: '4px',
+                  marginBottom: '0.4rem'
+                }}>
+                  Portal Security
+                </span>
+                <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#1e1e1e', margin: 0, letterSpacing: '-0.02em' }}>
+                  {(selectedClient.hasPortalAccount || selectedClient.userId != null) ? 'Reset Client Portal Password' : 'Enable Client Portal Access'}
+                </h2>
+                <p style={{ fontSize: '0.82rem', color: '#666666', margin: '0.35rem 0 0 0' }}>
+                  Generate credentials for <strong>{selectedClient.companyName}</strong> ({selectedClient.email}).
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowProvisionModal(false)}
+                style={{ background: '#f2f2f2', border: 'none', fontSize: '1.1rem', cursor: 'pointer', color: '#444444', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleProvisionAccount} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                  <label style={{ fontSize: '0.78rem', fontWeight: 700, color: '#2b2b2b' }}>Temporary Password</label>
                   <button
                     type="button"
                     onClick={() => setProvisionPassword(generateRandomPassword())}
-                    style={{ background: 'none', border: 'none', fontSize: '0.72rem', color: '#2b2b2b', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
+                    style={{ background: 'none', border: 'none', fontSize: '0.75rem', color: '#2b2b2b', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
                   >
-                    <RefreshCw size={11} /> Regenerate
+                    <RefreshCw size={12} /> Regenerate
                   </button>
                 </div>
                 <input
@@ -721,7 +890,7 @@ const ClientsPage = () => {
                   required
                   value={provisionPassword}
                   onChange={(e) => setProvisionPassword(e.target.value)}
-                  style={{ width: '100%', padding: '0.55rem 0.75rem', border: '1px solid #d4d4d4', borderRadius: '6px', fontSize: '0.85rem', fontFamily: 'monospace' }}
+                  style={{ width: '100%', padding: '0.65rem 0.8rem', border: '1px solid #d4d4d4', borderRadius: '6px', fontSize: '0.95rem', fontFamily: 'monospace', letterSpacing: '0.05em' }}
                 />
               </div>
 
@@ -729,68 +898,100 @@ const ClientsPage = () => {
                 <button
                   type="button"
                   onClick={() => setShowProvisionModal(false)}
-                  style={{ padding: '0.55rem 1rem', border: '1px solid #d4d4d4', backgroundColor: '#ffffff', color: '#666666', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}
+                  style={{ padding: '0.6rem 1.15rem', border: '1px solid #d4d4d4', backgroundColor: '#ffffff', color: '#666666', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  style={{ padding: '0.55rem 1.25rem', backgroundColor: '#2b2b2b', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}
+                  style={{ padding: '0.6rem 1.4rem', backgroundColor: '#2b2b2b', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' }}
                 >
-                  Save & Issue Credentials
+                  Save &amp; Issue Credentials
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* MODAL: CREDENTIALS SUMMARY (POST CREATION / RESET) */}
-      {showCredentialsModal && createdCredentials && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 110, padding: '1rem' }}>
-          <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', maxWidth: '460px', width: '100%', padding: '1.75rem', border: '1px solid #d4d4d4' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#2b8a3e', marginBottom: '0.75rem' }}>
-              <CheckCircle2 size={22} />
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#2b2b2b', margin: 0 }}>Client Credentials Generated</h2>
+      {showCredentialsModal && createdCredentials && createPortal(
+        <div
+          onClick={() => setShowCredentialsModal(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="card animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '14px',
+              maxWidth: '480px',
+              width: '100%',
+              margin: 'auto',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.45)',
+              padding: '2rem'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#2b8a3e', marginBottom: '0.75rem' }}>
+              <CheckCircle2 size={24} />
+              <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#1e1e1e', margin: 0 }}>Client Credentials Generated</h2>
             </div>
             <p style={{ fontSize: '0.85rem', color: '#666666', margin: '0 0 1.25rem 0' }}>
               Please copy these temporary credentials and deliver them securely to the client. The client must change their password on first sign-in.
             </p>
 
-            <div style={{ backgroundColor: '#fbfbfb', border: '1px solid #d4d4d4', borderRadius: '6px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div style={{ backgroundColor: '#fbfbfb', border: '1px solid #d4d4d4', borderRadius: '8px', padding: '1.15rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
               <div>
                 <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#8c8c8c', textTransform: 'uppercase' }}>Organization</span>
-                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#2b2b2b' }}>{createdCredentials.companyName}</div>
+                <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#2b2b2b' }}>{createdCredentials.companyName}</div>
               </div>
               <div>
                 <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#8c8c8c', textTransform: 'uppercase' }}>Login Email</span>
-                <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#2b2b2b' }}>{createdCredentials.email}</div>
+                <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#2b2b2b' }}>{createdCredentials.email}</div>
               </div>
               <div>
                 <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#8c8c8c', textTransform: 'uppercase' }}>Temporary Password</span>
-                <div style={{ fontSize: '1rem', fontWeight: 800, color: '#2b2b2b', fontFamily: 'monospace', letterSpacing: '0.05em' }}>
+                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#2b2b2b', fontFamily: 'monospace', letterSpacing: '0.05em' }}>
                   {createdCredentials.password}
                 </div>
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.25rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem' }}>
               <button
                 type="button"
                 onClick={() =>
                   copyToClipboard(
-                    `TaskFlow Client Portal Login:\nURL: http://localhost:5173/login\nEmail: ${createdCredentials.email}\nTemporary Password: ${createdCredentials.password}`
+                    `TaskFlow Client Portal Login:\nURL: http://localhost:5173/login/client\nEmail: ${createdCredentials.email}\nTemporary Password: ${createdCredentials.password}`
                   )
                 }
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.4rem',
-                  padding: '0.55rem 0.95rem',
+                  padding: '0.6rem 1rem',
                   backgroundColor: '#ffffff',
                   border: '1px solid #d4d4d4',
                   borderRadius: '6px',
-                  fontSize: '0.8rem',
+                  fontSize: '0.82rem',
                   fontWeight: 600,
                   cursor: 'pointer',
                   color: '#2b2b2b',
@@ -804,13 +1005,13 @@ const ClientsPage = () => {
                 type="button"
                 onClick={() => setShowCredentialsModal(false)}
                 style={{
-                  padding: '0.55rem 1.25rem',
+                  padding: '0.6rem 1.4rem',
                   backgroundColor: '#2b2b2b',
                   color: '#ffffff',
                   border: 'none',
                   borderRadius: '6px',
-                  fontSize: '0.82rem',
-                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  fontWeight: 700,
                   cursor: 'pointer',
                 }}
               >
@@ -818,7 +1019,8 @@ const ClientsPage = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

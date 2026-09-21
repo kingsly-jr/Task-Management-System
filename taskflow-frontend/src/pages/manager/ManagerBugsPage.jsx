@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../../api/client';
 import {
   Bug,
@@ -48,6 +49,17 @@ const ManagerBugsPage = () => {
       fetchProjectMembers(selectedProjectId);
     }
   }, [selectedProjectId, statusFilter, severityFilter, search]);
+
+  useEffect(() => {
+    if (selectedBugId && activeBugDetail) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [selectedBugId, activeBugDetail]);
 
   const fetchProjects = async () => {
     try {
@@ -420,9 +432,38 @@ const ManagerBugsPage = () => {
       </div>
 
       {/* DETAIL & TRIAGE MODAL */}
-      {selectedBugId && activeBugDetail && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '1rem' }}>
-          <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', maxWidth: '720px', width: '100%', maxHeight: '90vh', overflowY: 'auto', border: '1px solid #d4d4d4', padding: '1.75rem' }}>
+      {selectedBugId && activeBugDetail && createPortal(
+        <div
+          onClick={() => setSelectedBugId(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '14px',
+              maxWidth: '740px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              padding: '2rem'
+            }}
+          >
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.25rem', borderBottom: '1px solid #ececec', paddingBottom: '1rem' }}>
               <div>
@@ -596,7 +637,8 @@ const ManagerBugsPage = () => {
               </form>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

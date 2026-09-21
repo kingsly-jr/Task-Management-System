@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../../api/client';
 import {
   History,
@@ -37,6 +38,18 @@ const AuditLogsPage = () => {
 
   // Selected Log for Inspector Modal
   const [selectedLog, setSelectedLog] = useState(null);
+
+  // Lock body scroll when inspector modal is open
+  useEffect(() => {
+    if (selectedLog) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [selectedLog]);
 
   const fetchLogs = async (pageNum = page) => {
     try {
@@ -643,27 +656,42 @@ const AuditLogsPage = () => {
       </div>
 
       {/* Inspector Modal */}
-      {selectedLog && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 100,
-          padding: '1rem'
-        }}>
-          <div className="card animate-fade-in" style={{
-            width: '100%',
-            maxWidth: '650px',
-            maxHeight: '90vh',
-            overflowY: 'auto',
-            padding: 0
-          }}>
+      {selectedLog && createPortal(
+        <div
+          onClick={() => setSelectedLog(null)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="card animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '650px',
+              margin: 'auto',
+              maxHeight: 'min(90vh, 760px)',
+              overflowY: 'auto',
+              padding: 0,
+              borderRadius: '14px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              backgroundColor: '#ffffff'
+            }}
+          >
             {/* Modal Header */}
             <div style={{
               padding: '1.25rem 1.5rem',
@@ -671,7 +699,9 @@ const AuditLogsPage = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              backgroundColor: '#fafafa'
+              backgroundColor: '#fafafa',
+              borderTopLeftRadius: '14px',
+              borderTopRightRadius: '14px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                 <div style={{
@@ -803,7 +833,9 @@ const AuditLogsPage = () => {
               borderTop: '1px solid #e5e5e5',
               display: 'flex',
               justifyContent: 'flex-end',
-              backgroundColor: '#fafafa'
+              backgroundColor: '#fafafa',
+              borderBottomLeftRadius: '14px',
+              borderBottomRightRadius: '14px'
             }}>
               <button
                 onClick={() => setSelectedLog(null)}
@@ -814,7 +846,8 @@ const AuditLogsPage = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

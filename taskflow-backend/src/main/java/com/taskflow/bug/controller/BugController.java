@@ -48,6 +48,23 @@ public class BugController {
         return ResponseEntity.ok(ApiResponse.ok(list));
     }
 
+    @GetMapping("/bugs")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'CLIENT')")
+    @Operation(summary = "Get bugs with optional projectId filter")
+    public ResponseEntity<ApiResponse<List<BugDto.BugResponse>>> getAllBugs(
+            @RequestParam(required = false) Long projectId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String severity,
+            @RequestParam(required = false) Long assignedToId,
+            @RequestParam(required = false) String search) {
+        if (projectId != null) {
+            List<BugDto.BugResponse> list = bugService.getBugsForProject(projectId, status, severity, assignedToId, search);
+            return ResponseEntity.ok(ApiResponse.ok(list));
+        }
+        List<BugDto.BugResponse> list = bugService.getMyBugs("ALL");
+        return ResponseEntity.ok(ApiResponse.ok(list));
+    }
+
     @GetMapping("/projects/{projectId}/bugs/stats")
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'CLIENT')")
     @Operation(summary = "Get bug summary metrics and status distribution")

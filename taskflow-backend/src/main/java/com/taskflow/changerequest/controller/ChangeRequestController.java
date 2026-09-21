@@ -46,6 +46,20 @@ public class ChangeRequestController {
         return ResponseEntity.ok(ApiResponse.ok(list));
     }
 
+    @GetMapping("/change-requests")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'CLIENT')")
+    @Operation(summary = "Get change requests with optional projectId filter")
+    public ResponseEntity<ApiResponse<List<ChangeRequestDto.ChangeRequestResponse>>> getChangeRequests(
+            @RequestParam(required = false) Long projectId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String search) {
+        if (projectId != null) {
+            List<ChangeRequestDto.ChangeRequestResponse> list = changeRequestService.getChangeRequestsForProject(projectId, status, search);
+            return ResponseEntity.ok(ApiResponse.ok(list));
+        }
+        return ResponseEntity.ok(ApiResponse.ok(List.of()));
+    }
+
     @GetMapping("/projects/{projectId}/change-requests/stats")
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'CLIENT')")
     @Operation(summary = "Get aggregated change request metrics, cost impact, and schedule impact")

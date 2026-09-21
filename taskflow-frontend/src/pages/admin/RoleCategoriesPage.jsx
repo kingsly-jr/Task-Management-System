@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../../api/client';
 import {
   Tags,
@@ -11,7 +12,8 @@ import {
   ToggleRight,
   AlertCircle,
   RefreshCw,
-  Users
+  Users,
+  X
 } from 'lucide-react';
 
 const RoleCategoriesPage = () => {
@@ -25,6 +27,18 @@ const RoleCategoriesPage = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+
+  // Lock body scroll when either modal is open
+  useEffect(() => {
+    if (isCreateModalOpen || isEditModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isCreateModalOpen, isEditModalOpen]);
 
   // Form states
   const [formName, setFormName] = useState('');
@@ -298,28 +312,84 @@ const RoleCategoriesPage = () => {
       </div>
 
       {/* Create Modal */}
-      {isCreateModalOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(43, 43, 43, 0.4)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 100,
-          padding: '1rem'
-        }}>
-          <div className="card animate-fade-in" style={{ maxWidth: '480px', width: '100%', padding: '2rem' }}>
-            <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: '0.3rem', color: '#2b2b2b' }}>
-              Create Role Category
-            </h2>
-            <p style={{ color: '#666666', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
-              Add a new technical specialization category for company employees.
-            </p>
+      {isCreateModalOpen && createPortal(
+        <div
+          onClick={() => setIsCreateModalOpen(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="card animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '520px',
+              width: '100%',
+              margin: 'auto',
+              maxHeight: 'min(90vh, 720px)',
+              overflowY: 'auto',
+              padding: '2.25rem',
+              borderRadius: '14px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              backgroundColor: '#ffffff'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+              <div>
+                <span style={{
+                  display: 'inline-block',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  color: '#444444',
+                  backgroundColor: '#f2f2f2',
+                  border: '1px solid #e5e5e5',
+                  padding: '0.2rem 0.55rem',
+                  borderRadius: '4px',
+                  marginBottom: '0.5rem'
+                }}>
+                  Governance & Organization
+                </span>
+                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0, color: '#1e1e1e', letterSpacing: '-0.02em' }}>
+                  Create Role Category
+                </h2>
+                <p style={{ color: '#666666', fontSize: '0.84rem', margin: '0.35rem 0 0 0' }}>
+                  Add a new technical specialization category for company employees.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCreateModalOpen(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.4rem',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#8c8c8c'
+                }}
+              >
+                <X size={20} />
+              </button>
+            </div>
 
             {formError && (
               <div style={{
@@ -396,32 +466,89 @@ const RoleCategoriesPage = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Edit Modal */}
-      {isEditModalOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(43, 43, 43, 0.4)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 100,
-          padding: '1rem'
-        }}>
-          <div className="card animate-fade-in" style={{ maxWidth: '480px', width: '100%', padding: '2rem' }}>
-            <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: '0.3rem', color: '#2b2b2b' }}>
-              Edit Role Category
-            </h2>
-            <p style={{ color: '#666666', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
-              Update description or category naming for <strong>{editingCategory?.roleCategoryCode}</strong>.
-            </p>
+      {isEditModalOpen && createPortal(
+        <div
+          onClick={() => setIsEditModalOpen(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="card animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '520px',
+              width: '100%',
+              margin: 'auto',
+              maxHeight: 'min(90vh, 720px)',
+              overflowY: 'auto',
+              padding: '2.25rem',
+              borderRadius: '14px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              backgroundColor: '#ffffff'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+              <div>
+                <span style={{
+                  display: 'inline-block',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  color: '#444444',
+                  backgroundColor: '#f2f2f2',
+                  border: '1px solid #e5e5e5',
+                  padding: '0.2rem 0.55rem',
+                  borderRadius: '4px',
+                  marginBottom: '0.5rem'
+                }}>
+                  Category Modification
+                </span>
+                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0, color: '#1e1e1e', letterSpacing: '-0.02em' }}>
+                  Edit Role Category
+                </h2>
+                <p style={{ color: '#666666', fontSize: '0.84rem', margin: '0.35rem 0 0 0' }}>
+                  Update description or category naming for <strong>{editingCategory?.roleCategoryCode}</strong>.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsEditModalOpen(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.4rem',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#8c8c8c'
+                }}
+              >
+                <X size={20} />
+              </button>
+            </div>
 
             {formError && (
               <div style={{
@@ -496,7 +623,8 @@ const RoleCategoriesPage = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -7,7 +7,9 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-
+/**
+ * Data Transfer Objects for Project management, financial tracking, and metrics.
+ */
 public class ProjectDto {
 
     public static class CreateProjectRequest {
@@ -32,6 +34,8 @@ public class ProjectDto {
         private LocalDate expectedEndDate;
 
         private BigDecimal budget;
+        private BigDecimal paidAmount;
+        private BigDecimal remainingAmount;
         private String priority = "MEDIUM";
         private String status = "PLANNING";
         private String technologyStack;
@@ -54,6 +58,10 @@ public class ProjectDto {
         public void setExpectedEndDate(LocalDate expectedEndDate) { this.expectedEndDate = expectedEndDate; }
         public BigDecimal getBudget() { return budget; }
         public void setBudget(BigDecimal budget) { this.budget = budget; }
+        public BigDecimal getPaidAmount() { return paidAmount; }
+        public void setPaidAmount(BigDecimal paidAmount) { this.paidAmount = paidAmount; }
+        public BigDecimal getRemainingAmount() { return remainingAmount; }
+        public void setRemainingAmount(BigDecimal remainingAmount) { this.remainingAmount = remainingAmount; }
         public String getPriority() { return priority; }
         public void setPriority(String priority) { this.priority = priority; }
         public String getStatus() { return status; }
@@ -72,6 +80,8 @@ public class ProjectDto {
         private LocalDate expectedEndDate;
         private LocalDate actualEndDate;
         private BigDecimal budget;
+        private BigDecimal paidAmount;
+        private BigDecimal remainingAmount;
         private String priority;
         private String status;
         private Integer progress;
@@ -93,6 +103,10 @@ public class ProjectDto {
         public void setActualEndDate(LocalDate actualEndDate) { this.actualEndDate = actualEndDate; }
         public BigDecimal getBudget() { return budget; }
         public void setBudget(BigDecimal budget) { this.budget = budget; }
+        public BigDecimal getPaidAmount() { return paidAmount; }
+        public void setPaidAmount(BigDecimal paidAmount) { this.paidAmount = paidAmount; }
+        public BigDecimal getRemainingAmount() { return remainingAmount; }
+        public void setRemainingAmount(BigDecimal remainingAmount) { this.remainingAmount = remainingAmount; }
         public String getPriority() { return priority; }
         public void setPriority(String priority) { this.priority = priority; }
         public String getStatus() { return status; }
@@ -122,6 +136,8 @@ public class ProjectDto {
         private LocalDate expectedEndDate;
         private LocalDate actualEndDate;
         private BigDecimal budget;
+        private BigDecimal paidAmount;
+        private BigDecimal remainingAmount;
         private String priority;
         private String status;
         private Integer progress;
@@ -136,7 +152,8 @@ public class ProjectDto {
                                Long clientId, String clientCompanyName, String clientContactPerson, String clientEmail,
                                Long projectManagerId, String projectManagerName, String projectManagerEmail,
                                LocalDate startDate, LocalDate expectedEndDate, LocalDate actualEndDate,
-                               BigDecimal budget, String priority, String status, Integer progress,
+                               BigDecimal budget, BigDecimal paidAmount, BigDecimal remainingAmount,
+                               String priority, String status, Integer progress,
                                String technologyStack, long teamMembersCount, Instant createdAt, Instant updatedAt) {
             this.projectId = projectId;
             this.projectCode = projectCode;
@@ -153,6 +170,8 @@ public class ProjectDto {
             this.expectedEndDate = expectedEndDate;
             this.actualEndDate = actualEndDate;
             this.budget = budget;
+            this.paidAmount = paidAmount;
+            this.remainingAmount = remainingAmount;
             this.priority = priority;
             this.status = status;
             this.progress = progress;
@@ -192,6 +211,10 @@ public class ProjectDto {
         public void setActualEndDate(LocalDate actualEndDate) { this.actualEndDate = actualEndDate; }
         public BigDecimal getBudget() { return budget; }
         public void setBudget(BigDecimal budget) { this.budget = budget; }
+        public BigDecimal getPaidAmount() { return paidAmount; }
+        public void setPaidAmount(BigDecimal paidAmount) { this.paidAmount = paidAmount; }
+        public BigDecimal getRemainingAmount() { return remainingAmount; }
+        public void setRemainingAmount(BigDecimal remainingAmount) { this.remainingAmount = remainingAmount; }
         public String getPriority() { return priority; }
         public void setPriority(String priority) { this.priority = priority; }
         public String getStatus() { return status; }

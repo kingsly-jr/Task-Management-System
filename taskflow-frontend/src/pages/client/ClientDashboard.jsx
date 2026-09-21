@@ -57,6 +57,16 @@ const ClientDashboard = () => {
     ? Math.round(projects.reduce((acc, p) => acc + (p.progressPercentage || 0), 0) / projects.length)
     : 0;
 
+  const totalContractValue = projects.reduce((acc, p) => acc + (Number(p.budget) || 0), 0);
+  const totalPaid = projects.reduce((acc, p) => acc + (Number(p.paidAmount) || 0), 0);
+  const totalRemaining = projects.reduce((acc, p) => {
+    const rem = p.remainingAmount !== null && p.remainingAmount !== undefined
+      ? Number(p.remainingAmount)
+      : Math.max(0, (Number(p.budget) || 0) - (Number(p.paidAmount) || 0));
+    return acc + rem;
+  }, 0);
+  const settlementPct = totalContractValue > 0 ? Math.round((totalPaid / totalContractValue) * 100) : 0;
+
   return (
     <div className="animate-fade-in" style={{ paddingBottom: '3rem' }}>
       {/* Top Banner */}
@@ -114,13 +124,13 @@ const ClientDashboard = () => {
 
         <div className="card" style={{ padding: '1.25rem' }}>
           <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#666666', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            Data Isolation
+            Contract Settlement
           </div>
-          <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#2b2b2b', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <ShieldCheck size={28} color="#2b2b2b" /> Active
+          <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#2b8a3e' }}>
+            {loading ? '—' : `$${totalPaid.toLocaleString()}`}
           </div>
           <div style={{ fontSize: '0.75rem', color: '#8c8c8c', marginTop: '0.2rem' }}>
-            Strict tenant boundary enforced
+            {settlementPct}% settled (${totalRemaining.toLocaleString()} due)
           </div>
         </div>
       </div>
@@ -178,8 +188,17 @@ const ClientDashboard = () => {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                  <div style={{ width: '120px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
+                  {/* Financial Settlement */}
+                  <div style={{ minWidth: '130px', fontSize: '0.75rem', textAlign: 'right' }}>
+                    <div style={{ color: '#8c8c8c' }}>Contract Value: <strong style={{ color: '#2b2b2b' }}>${Number(p.budget || 0).toLocaleString()}</strong></div>
+                    <div style={{ color: '#2b8a3e' }}>Paid: <strong>${Number(p.paidAmount || 0).toLocaleString()}</strong></div>
+                    <div style={{ color: Number(p.remainingAmount) > 0 ? '#d9480f' : '#0ca678', fontWeight: 700 }}>
+                      {Number(p.remainingAmount) > 0 ? `Due: $${Number(p.remainingAmount).toLocaleString()}` : '✓ Settled'}
+                    </div>
+                  </div>
+
+                  <div style={{ width: '110px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', marginBottom: '0.25rem' }}>
                       <span style={{ color: '#666666' }}>Progress</span>
                       <span style={{ fontWeight: 800, color: '#2b2b2b' }}>{p.progressPercentage}%</span>
@@ -207,6 +226,130 @@ const ClientDashboard = () => {
             ))}
           </div>
         )}
+      </div>
+
+      {/* Quick Portal Navigation Modules */}
+      <div style={{ marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1e1e1e', margin: '0 0 1rem 0' }}>
+          Portal Management Hub
+        </h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
+          <Link
+            to="/client/deliverables"
+            className="card"
+            style={{
+              padding: '1.25rem',
+              backgroundColor: '#ffffff',
+              borderRadius: '10px',
+              border: '1px solid #e5e5e5',
+              textDecoration: 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              transition: 'box-shadow 0.2s'
+            }}
+          >
+            <div>
+              <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#8c8c8c', textTransform: 'uppercase' }}>Scope &amp; Roadmaps</span>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#1e1e1e', margin: '0.25rem 0 0.35rem 0' }}>
+                Milestones &amp; Deliverables
+              </h3>
+              <p style={{ fontSize: '0.82rem', color: '#666666', margin: 0 }}>
+                Track milestone acceptance criteria, release dates, and sprint deliverables.
+              </p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', fontWeight: 700, color: '#1e1e1e', marginTop: '1rem' }}>
+              View Deliverables <ChevronRight size={13} />
+            </div>
+          </Link>
+
+          <Link
+            to="/client/feedback"
+            className="card"
+            style={{
+              padding: '1.25rem',
+              backgroundColor: '#ffffff',
+              borderRadius: '10px',
+              border: '1px solid #e5e5e5',
+              textDecoration: 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              transition: 'box-shadow 0.2s'
+            }}
+          >
+            <div>
+              <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#8c8c8c', textTransform: 'uppercase' }}>Delivery Reviews</span>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#1e1e1e', margin: '0.25rem 0 0.35rem 0' }}>
+                Project Completion Feedback
+              </h3>
+              <p style={{ fontSize: '0.82rem', color: '#666666', margin: 0 }}>
+                Submit ratings, quality evaluations, and testimonials for completed contracts.
+              </p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', fontWeight: 700, color: '#1e1e1e', marginTop: '1rem' }}>
+              Submit Reviews <ChevronRight size={13} />
+            </div>
+          </Link>
+
+          <Link
+            to="/client/invoices"
+            className="card"
+            style={{
+              padding: '1.25rem',
+              backgroundColor: '#ffffff',
+              borderRadius: '10px',
+              border: '1px solid #e5e5e5',
+              textDecoration: 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              transition: 'box-shadow 0.2s'
+            }}
+          >
+            <div>
+              <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#8c8c8c', textTransform: 'uppercase' }}>Settlement &amp; Billing</span>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#1e1e1e', margin: '0.25rem 0 0.35rem 0' }}>
+                Invoices &amp; Billing
+              </h3>
+              <p style={{ fontSize: '0.82rem', color: '#666666', margin: 0 }}>
+                Review contract billing history, paid receipts, and payment terms.
+              </p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', fontWeight: 700, color: '#1e1e1e', marginTop: '1rem' }}>
+              View Invoices <ChevronRight size={13} />
+            </div>
+          </Link>
+
+          <Link
+            to="/client/settings"
+            className="card"
+            style={{
+              padding: '1.25rem',
+              backgroundColor: '#ffffff',
+              borderRadius: '10px',
+              border: '1px solid #e5e5e5',
+              textDecoration: 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              transition: 'box-shadow 0.2s'
+            }}
+          >
+            <div>
+              <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#8c8c8c', textTransform: 'uppercase' }}>Profile &amp; Security</span>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#1e1e1e', margin: '0.25rem 0 0.35rem 0' }}>
+                Company Settings
+              </h3>
+              <p style={{ fontSize: '0.82rem', color: '#666666', margin: 0 }}>
+                Manage organization profile, representative contact details, and password security.
+              </p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', fontWeight: 700, color: '#1e1e1e', marginTop: '1rem' }}>
+              Open Settings <ChevronRight size={13} />
+            </div>
+          </Link>
+        </div>
       </div>
 
       {/* Security Privacy Notice */}

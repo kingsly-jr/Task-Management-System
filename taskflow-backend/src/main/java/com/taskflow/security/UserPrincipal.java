@@ -37,6 +37,10 @@ public class UserPrincipal implements UserDetails {
         return id;
     }
 
+    public Long getUserId() {
+        return id;
+    }
+
     public String getEmail() {
         return email;
     }
@@ -50,6 +54,10 @@ public class UserPrincipal implements UserDetails {
     }
 
     public String getRoleCode() {
+        return roleCode;
+    }
+
+    public String getRole() {
         return roleCode;
     }
 

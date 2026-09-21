@@ -28,8 +28,7 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.ok("TaskFlow backend service is running", Map.of(
                 "status", "UP",
                 "version", "1.0.0",
-                "system", "TaskFlow"
-        )));
+                "system", "TaskFlow")));
     }
 
     @PostMapping("/login")

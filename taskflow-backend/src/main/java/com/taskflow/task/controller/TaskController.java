@@ -36,6 +36,21 @@ public class TaskController {
                 .body(ApiResponse.ok("Task created successfully", response));
     }
 
+    @PostMapping("/tasks")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
+    @Operation(summary = "Create task for project (with projectId in body or query)")
+    public ResponseEntity<ApiResponse<TaskDto.TaskResponse>> createTaskRoot(
+            @RequestParam(required = false) Long projectId,
+            @Valid @RequestBody TaskDto.CreateTaskRequest request) {
+        Long targetProjectId = projectId != null ? projectId : request.getProjectId();
+        if (targetProjectId == null) {
+            throw new com.taskflow.common.exception.BadRequestException("projectId is required");
+        }
+        TaskDto.TaskResponse response = taskService.createTask(targetProjectId, request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok("Task created successfully", response));
+    }
+
     @GetMapping("/projects/{projectId}/tasks")
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'CLIENT')")
     @Operation(summary = "Get tasks for project with filters")

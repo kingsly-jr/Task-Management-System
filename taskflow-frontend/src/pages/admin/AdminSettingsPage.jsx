@@ -856,7 +856,7 @@ const AdminSettingsPage = () => {
                 <input
                   type="password"
                   className="input-field"
-                  placeholder="Enter current password (default: admin123)"
+                  placeholder="Enter current master password"
                   value={passwordForm.currentPassword}
                   onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
                   required

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import api from '../../api/client';
 import {
   FolderKanban,
@@ -13,10 +15,12 @@ import {
   Clock,
   Layers,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  X
 } from 'lucide-react';
 
 const AdminProjectsPage = () => {
+  const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [clients, setClients] = useState([]);
   const [projectManagers, setProjectManagers] = useState([]);
@@ -31,6 +35,18 @@ const AdminProjectsPage = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
 
+  // Lock body scroll when either modal is open
+  useEffect(() => {
+    if (showAddModal || showEditModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showAddModal, showEditModal]);
+
   // Form Data
   const [formData, setFormData] = useState({
     projectCode: '',
@@ -41,10 +57,32 @@ const AdminProjectsPage = () => {
     startDate: '',
     expectedEndDate: '',
     budget: '',
+    paidAmount: '0',
+    remainingAmount: '',
     priority: 'MEDIUM',
     status: 'PLANNING',
     technologyStack: '',
   });
+
+  const handleBudgetChange = (newBudget) => {
+    const bNum = parseFloat(newBudget);
+    const pNum = parseFloat(formData.paidAmount || '0');
+    let rem = '';
+    if (!isNaN(bNum)) {
+      rem = String(Math.max(0, bNum - (isNaN(pNum) ? 0 : pNum)));
+    }
+    setFormData(prev => ({ ...prev, budget: newBudget, remainingAmount: rem }));
+  };
+
+  const handlePaidChange = (newPaid) => {
+    const bNum = parseFloat(formData.budget || '0');
+    const pNum = parseFloat(newPaid);
+    let rem = '';
+    if (!isNaN(bNum)) {
+      rem = String(Math.max(0, bNum - (isNaN(pNum) ? 0 : pNum)));
+    }
+    setFormData(prev => ({ ...prev, paidAmount: newPaid, remainingAmount: rem }));
+  };
 
   useEffect(() => {
     fetchAuxiliaryData();
@@ -99,6 +137,8 @@ const AdminProjectsPage = () => {
       startDate: today,
       expectedEndDate: nextMonth,
       budget: '15000',
+      paidAmount: '0',
+      remainingAmount: '15000',
       priority: 'MEDIUM',
       status: 'PLANNING',
       technologyStack: 'React, Java Spring Boot, PostgreSQL',
@@ -119,6 +159,8 @@ const AdminProjectsPage = () => {
         startDate: formData.startDate,
         expectedEndDate: formData.expectedEndDate,
         budget: formData.budget ? parseFloat(formData.budget) : null,
+        paidAmount: formData.paidAmount ? parseFloat(formData.paidAmount) : 0,
+        remainingAmount: formData.remainingAmount ? parseFloat(formData.remainingAmount) : null,
         priority: formData.priority,
         status: formData.status,
         technologyStack: formData.technologyStack.trim() || null,
@@ -134,6 +176,12 @@ const AdminProjectsPage = () => {
 
   const handleOpenEditModal = (project) => {
     setSelectedProject(project);
+    const bVal = project.budget !== null && project.budget !== undefined ? project.budget : '';
+    const pVal = project.paidAmount !== null && project.paidAmount !== undefined ? project.paidAmount : 0;
+    const rVal = project.remainingAmount !== null && project.remainingAmount !== undefined
+      ? project.remainingAmount
+      : (bVal !== '' ? Math.max(0, bVal - pVal) : '');
+
     setFormData({
       projectName: project.projectName,
       description: project.description || '',
@@ -141,7 +189,9 @@ const AdminProjectsPage = () => {
       startDate: project.startDate || '',
       expectedEndDate: project.expectedEndDate || '',
       actualEndDate: project.actualEndDate || '',
-      budget: project.budget !== null ? String(project.budget) : '',
+      budget: bVal !== '' ? String(bVal) : '',
+      paidAmount: String(pVal),
+      remainingAmount: rVal !== '' ? String(rVal) : '',
       priority: project.priority || 'MEDIUM',
       status: project.status || 'PLANNING',
       progress: project.progress || 0,
@@ -163,6 +213,8 @@ const AdminProjectsPage = () => {
         expectedEndDate: formData.expectedEndDate,
         actualEndDate: formData.actualEndDate || null,
         budget: formData.budget ? parseFloat(formData.budget) : null,
+        paidAmount: formData.paidAmount ? parseFloat(formData.paidAmount) : 0,
+        remainingAmount: formData.remainingAmount ? parseFloat(formData.remainingAmount) : null,
         priority: formData.priority,
         status: formData.status,
         progress: parseInt(formData.progress, 10),
@@ -351,7 +403,20 @@ const AdminProjectsPage = () => {
               <div>
                 {/* Header: Code & Badges */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                  <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '0.2rem 0.5rem', backgroundColor: '#f0f0f0', color: '#2b2b2b', borderRadius: '4px', letterSpacing: '0.04em' }}>
+                  <span
+                    onClick={() => navigate(`/admin/projects/${p.projectId}`)}
+                    title="View Project Workspace"
+                    style={{
+                      fontSize: '0.72rem',
+                      fontWeight: 800,
+                      padding: '0.2rem 0.5rem',
+                      backgroundColor: '#f0f0f0',
+                      color: '#2b2b2b',
+                      borderRadius: '4px',
+                      letterSpacing: '0.04em',
+                      cursor: 'pointer'
+                    }}
+                  >
                     {p.projectCode}
                   </span>
 
@@ -385,7 +450,21 @@ const AdminProjectsPage = () => {
                 </div>
 
                 {/* Project Title & Client */}
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#2b2b2b', margin: '0 0 0.35rem 0', letterSpacing: '-0.01em' }}>
+                <h3
+                  onClick={() => navigate(`/admin/projects/${p.projectId}`)}
+                  title="View Project Workspace"
+                  style={{
+                    fontSize: '1.1rem',
+                    fontWeight: 800,
+                    color: '#2b2b2b',
+                    margin: '0 0 0.35rem 0',
+                    letterSpacing: '-0.01em',
+                    cursor: 'pointer',
+                    transition: 'color 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#000000')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = '#2b2b2b')}
+                >
                   {p.projectName}
                 </h3>
 
@@ -419,61 +498,101 @@ const AdminProjectsPage = () => {
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <Layers size={13} color="#8c8c8c" />
+                    <span>Team: <strong>{p.teamMembersCount} members</strong></span>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                     <DollarSign size={13} color="#8c8c8c" />
                     <span>Budget: <strong>${p.budget ? Number(p.budget).toLocaleString() : 'N/A'}</strong></span>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <Calendar size={13} color="#8c8c8c" />
-                    <span>Due: <strong>{p.expectedEndDate}</strong></span>
+                    <CheckCircle2 size={13} color="#2b8a3e" />
+                    <span>Paid: <strong style={{ color: '#2b8a3e' }}>${p.paidAmount !== null && p.paidAmount !== undefined ? Number(p.paidAmount).toLocaleString() : '0'}</strong></span>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <Layers size={13} color="#8c8c8c" />
-                    <span>Team: <strong>{p.teamMembersCount} members</strong></span>
+                    <Clock size={13} color={Number(p.remainingAmount) > 0 ? '#d9480f' : '#8c8c8c'} />
+                    <span>Due: <strong style={{ color: Number(p.remainingAmount) > 0 ? '#d9480f' : '#2b2b2b' }}>${p.remainingAmount !== null && p.remainingAmount !== undefined ? Number(p.remainingAmount).toLocaleString() : (p.budget ? Number(p.budget - (p.paidAmount || 0)).toLocaleString() : '0')}</strong></span>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <Calendar size={13} color="#8c8c8c" />
+                    <span>Target: <strong>{p.expectedEndDate}</strong></span>
                   </div>
                 </div>
               </div>
 
               {/* Actions */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', borderTop: '1px solid #f0f0f0', paddingTop: '0.75rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', borderTop: '1px solid #f0f0f0', paddingTop: '0.75rem', flexWrap: 'wrap' }}>
                 <button
-                  onClick={() => handleOpenEditModal(p)}
+                  onClick={() => navigate(`/admin/projects/${p.projectId}`)}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '0.35rem',
-                    padding: '0.4rem 0.75rem',
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #d4d4d4',
+                    gap: '0.4rem',
+                    padding: '0.42rem 0.85rem',
+                    backgroundColor: '#2b2b2b',
+                    color: '#ffffff',
+                    border: '1px solid #2b2b2b',
                     borderRadius: '4px',
                     fontSize: '0.75rem',
-                    fontWeight: 600,
-                    color: '#2b2b2b',
+                    fontWeight: 700,
                     cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#111111';
+                    e.currentTarget.style.borderColor = '#111111';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#2b2b2b';
+                    e.currentTarget.style.borderColor = '#2b2b2b';
                   }}
                 >
-                  <Edit2 size={12} /> Edit
+                  <FolderKanban size={13} /> View Workspace & Details
                 </button>
 
-                <button
-                  onClick={() => handleDeleteProject(p)}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.35rem',
-                    padding: '0.4rem 0.75rem',
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #d4d4d4',
-                    borderRadius: '4px',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    color: '#e03131',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <Trash2 size={12} /> Delete
-                </button>
+                <div style={{ display: 'flex', gap: '0.4rem' }}>
+                  <button
+                    onClick={() => handleOpenEditModal(p)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      padding: '0.4rem 0.75rem',
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #d4d4d4',
+                      borderRadius: '4px',
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      color: '#2b2b2b',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <Edit2 size={12} /> Edit
+                  </button>
+
+                  <button
+                    onClick={() => handleDeleteProject(p)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      padding: '0.4rem 0.75rem',
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #d4d4d4',
+                      borderRadius: '4px',
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      color: '#e03131',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <Trash2 size={12} /> Delete
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -481,13 +600,84 @@ const AdminProjectsPage = () => {
       )}
 
       {/* MODAL: CREATE PROJECT */}
-      {showAddModal && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '1rem' }}>
-          <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', maxWidth: '580px', width: '100%', padding: '1.5rem', border: '1px solid #d4d4d4', maxHeight: '90vh', overflowY: 'auto' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#2b2b2b', margin: '0 0 0.5rem 0' }}>Initialize New Project</h2>
-            <p style={{ fontSize: '0.82rem', color: '#666666', margin: '0 0 1.25rem 0' }}>
-              Assign client ownership, appoint an executive Project Manager, and set budget boundaries.
-            </p>
+      {showAddModal && createPortal(
+        <div
+          onClick={() => setShowAddModal(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="card animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '14px',
+              maxWidth: '580px',
+              width: '100%',
+              margin: 'auto',
+              maxHeight: 'min(90vh, 760px)',
+              overflowY: 'auto',
+              padding: '2rem',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+              <div>
+                <span style={{
+                  display: 'inline-block',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  color: '#444444',
+                  backgroundColor: '#f2f2f2',
+                  border: '1px solid #e5e5e5',
+                  padding: '0.2rem 0.55rem',
+                  borderRadius: '4px',
+                  marginBottom: '0.5rem'
+                }}>
+                  Project Provisioning
+                </span>
+                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#1e1e1e', margin: 0, letterSpacing: '-0.02em' }}>
+                  Initialize New Project
+                </h2>
+                <p style={{ fontSize: '0.84rem', color: '#666666', margin: '0.35rem 0 0 0' }}>
+                  Assign client ownership, appoint an executive Project Manager, and set budget boundaries.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAddModal(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.4rem',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#8c8c8c'
+                }}
+              >
+                <X size={20} />
+              </button>
+            </div>
 
             <form onSubmit={handleCreateProject} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem' }}>
@@ -575,19 +765,51 @@ const AdminProjectsPage = () => {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>Budget ($ USD)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="25000"
-                    value={formData.budget}
-                    onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                    style={{ width: '100%', padding: '0.55rem 0.75rem', border: '1px solid #d4d4d4', borderRadius: '6px', fontSize: '0.85rem' }}
-                  />
+              {/* Financial Breakdown Section in Create Modal */}
+              <div style={{ padding: '0.9rem', backgroundColor: '#fcfcfc', border: '1px solid #e5e5e5', borderRadius: '8px' }}>
+                <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#1e1e1e', letterSpacing: '0.02em', textTransform: 'uppercase', marginBottom: '0.65rem' }}>
+                  Client Billing &amp; Financials
                 </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.3rem' }}>Total Budget ($ USD)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="25000"
+                      value={formData.budget}
+                      onChange={(e) => handleBudgetChange(e.target.value)}
+                      style={{ width: '100%', padding: '0.5rem 0.65rem', border: '1px solid #d4d4d4', borderRadius: '6px', fontSize: '0.85rem' }}
+                    />
+                  </div>
 
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#2b8a3e', marginBottom: '0.3rem' }}>Paid by Client ($ USD)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                      value={formData.paidAmount}
+                      onChange={(e) => handlePaidChange(e.target.value)}
+                      style={{ width: '100%', padding: '0.5rem 0.65rem', border: '1px solid #d4d4d4', borderRadius: '6px', fontSize: '0.85rem', color: '#2b8a3e' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.3rem' }}>Remaining Balance ($)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                      value={formData.remainingAmount}
+                      onChange={(e) => setFormData({ ...formData, remainingAmount: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem 0.65rem', border: '1px solid #d4d4d4', borderRadius: '6px', fontSize: '0.85rem' }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>Priority</label>
                   <select
@@ -654,18 +876,91 @@ const AdminProjectsPage = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* MODAL: EDIT PROJECT */}
-      {showEditModal && selectedProject && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '1rem' }}>
-          <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', maxWidth: '560px', width: '100%', padding: '1.5rem', border: '1px solid #d4d4d4', maxHeight: '90vh', overflowY: 'auto' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#2b2b2b', margin: '0 0 0.5rem 0' }}>
-              Edit Project: {selectedProject.projectCode}
-            </h2>
+      {showEditModal && selectedProject && createPortal(
+        <div
+          onClick={() => setShowEditModal(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="card animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '14px',
+              maxWidth: '580px',
+              width: '100%',
+              margin: 'auto',
+              maxHeight: 'min(90vh, 760px)',
+              overflowY: 'auto',
+              padding: '2rem',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+              <div>
+                <span style={{
+                  display: 'inline-block',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  color: '#444444',
+                  backgroundColor: '#f2f2f2',
+                  border: '1px solid #e5e5e5',
+                  padding: '0.2rem 0.55rem',
+                  borderRadius: '4px',
+                  marginBottom: '0.5rem'
+                }}>
+                  Project Configuration
+                </span>
+                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#1e1e1e', margin: 0, letterSpacing: '-0.02em' }}>
+                  Edit Project: {selectedProject.projectCode}
+                </h2>
+                <p style={{ fontSize: '0.84rem', color: '#666666', margin: '0.35rem 0 0 0' }}>
+                  Update project status, managerial assignment, timeline dates, and allocated budget.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowEditModal(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.4rem',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#8c8c8c'
+                }}
+              >
+                <X size={20} />
+              </button>
+            </div>
 
-            <form onSubmit={handleUpdateProject} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+            <form onSubmit={handleUpdateProject} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>Project Name *</label>
                 <input
@@ -737,25 +1032,87 @@ const AdminProjectsPage = () => {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>Expected End Date</label>
-                  <input
-                    type="date"
-                    value={formData.expectedEndDate}
-                    onChange={(e) => setFormData({ ...formData, expectedEndDate: e.target.value })}
-                    style={{ width: '100%', padding: '0.55rem 0.75rem', border: '1px solid #d4d4d4', borderRadius: '6px', fontSize: '0.85rem' }}
-                  />
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>Expected End Date</label>
+                <input
+                  type="date"
+                  value={formData.expectedEndDate}
+                  onChange={(e) => setFormData({ ...formData, expectedEndDate: e.target.value })}
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', border: '1px solid #d4d4d4', borderRadius: '6px', fontSize: '0.85rem' }}
+                />
+              </div>
+
+              {/* Client Financials & Settlement Section in Edit Modal */}
+              <div style={{ padding: '1rem', backgroundColor: '#fcfcfc', border: '1px solid #e5e5e5', borderRadius: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                  <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#1e1e1e', letterSpacing: '0.02em', textTransform: 'uppercase' }}>
+                    Client Financials &amp; Settlement
+                  </span>
+                  {Number(formData.budget) > 0 && (
+                    <span style={{
+                      fontSize: '0.7rem',
+                      fontWeight: 700,
+                      padding: '0.15rem 0.5rem',
+                      borderRadius: '4px',
+                      backgroundColor: Number(formData.remainingAmount) === 0 ? '#e6fcf5' : Number(formData.paidAmount) > 0 ? '#e7f5ff' : '#f1f1f1',
+                      color: Number(formData.remainingAmount) === 0 ? '#0ca678' : Number(formData.paidAmount) > 0 ? '#1971c2' : '#666666'
+                    }}>
+                      {Number(formData.remainingAmount) === 0 ? '✓ Settled in Full' : Number(formData.paidAmount) > 0 ? 'Partially Settled' : 'Pending Payment'}
+                    </span>
+                  )}
                 </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>Budget ($ USD)</label>
-                  <input
-                    type="number"
-                    value={formData.budget}
-                    onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                    style={{ width: '100%', padding: '0.55rem 0.75rem', border: '1px solid #d4d4d4', borderRadius: '6px', fontSize: '0.85rem' }}
-                  />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.3rem' }}>
+                      Contract Budget ($ USD)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={formData.budget}
+                      onChange={(e) => handleBudgetChange(e.target.value)}
+                      placeholder="0"
+                      style={{ width: '100%', padding: '0.5rem 0.65rem', border: '1px solid #d4d4d4', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700 }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#2b8a3e', marginBottom: '0.3rem' }}>
+                      Paid by Client ($ USD)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={formData.paidAmount}
+                      onChange={(e) => handlePaidChange(e.target.value)}
+                      placeholder="0"
+                      style={{ width: '100%', padding: '0.5rem 0.65rem', border: '1px solid #d4d4d4', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700, color: '#2b8a3e' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: Number(formData.remainingAmount) > 0 ? '#d9480f' : '#2b2b2b', marginBottom: '0.3rem' }}>
+                      Remaining Balance ($)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={formData.remainingAmount}
+                      onChange={(e) => setFormData({ ...formData, remainingAmount: e.target.value })}
+                      placeholder="0"
+                      style={{ width: '100%', padding: '0.5rem 0.65rem', border: '1px solid #d4d4d4', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700, color: Number(formData.remainingAmount) > 0 ? '#d9480f' : '#2b2b2b' }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '0.65rem', fontSize: '0.74rem', color: '#666666', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.4rem' }}>
+                  <span>
+                    Settled: <strong style={{ color: '#2b8a3e' }}>${Number(formData.paidAmount || 0).toLocaleString()}</strong> of <strong>${Number(formData.budget || 0).toLocaleString()}</strong>
+                  </span>
+                  <span>
+                    Remaining Due: <strong style={{ color: Number(formData.remainingAmount) > 0 ? '#d9480f' : '#0ca678' }}>${Number(formData.remainingAmount || 0).toLocaleString()}</strong>
+                  </span>
                 </div>
               </div>
 
@@ -776,7 +1133,8 @@ const AdminProjectsPage = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

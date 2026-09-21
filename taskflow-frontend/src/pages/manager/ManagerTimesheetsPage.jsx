@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import {
   Clock,
@@ -44,6 +45,17 @@ const ManagerTimesheetsPage = () => {
       fetchProjectWorklogs(selectedProjectId);
     }
   }, [selectedProjectId]);
+
+  useEffect(() => {
+    if (rejectModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [rejectModalOpen]);
 
   const fetchProjects = async () => {
     try {
@@ -462,28 +474,39 @@ const ManagerTimesheetsPage = () => {
       </div>
 
       {/* Reject Timesheet Modal */}
-      {rejectModalOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 100,
-          padding: '1rem'
-        }}>
-          <div style={{
-            backgroundColor: '#ffffff',
-            borderRadius: '8px',
-            width: '100%',
-            maxWidth: '480px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-            overflow: 'hidden'
-          }}>
+      {rejectModalOpen && createPortal(
+        <div
+          onClick={() => setRejectModalOpen(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '14px',
+              width: '100%',
+              maxWidth: '500px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              overflow: 'hidden'
+            }}
+          >
             <div style={{
               padding: '1.25rem 1.5rem',
               borderBottom: '1px solid #d4d4d4',
@@ -571,7 +594,8 @@ const ManagerTimesheetsPage = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

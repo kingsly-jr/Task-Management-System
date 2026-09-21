@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -34,6 +35,19 @@ const MemberBugsPage = () => {
   const [selectedBug, setSelectedBug] = useState(null);
   const [activeBugDetail, setActiveBugDetail] = useState(null);
   const [commentContent, setCommentContent] = useState('');
+
+  // Background scroll lock when any modal is active
+  const isAnyModalOpen = showReportModal || showResolveModal || showReopenModal || showDetailModal;
+  useEffect(() => {
+    if (isAnyModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isAnyModalOpen]);
 
   // Form States
   const [reportFormData, setReportFormData] = useState({
@@ -458,25 +472,98 @@ const MemberBugsPage = () => {
       )}
 
       {/* MODAL: REPORT NEW DEFECT */}
-      {showReportModal && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '1rem' }}>
-          <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', maxWidth: '620px', width: '100%', maxHeight: '90vh', overflowY: 'auto', border: '1px solid #d4d4d4', padding: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#2b2b2b', margin: '0 0 0.35rem 0' }}>
-              Report Software Defect
-            </h2>
-            <p style={{ fontSize: '0.82rem', color: '#666666', margin: '0 0 1.25rem 0' }}>
-              Submit reproducible issue details, system environment, and expected outcomes for triage.
-            </p>
+      {showReportModal && createPortal(
+        <div
+          onClick={() => setShowReportModal(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="card animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '14px',
+              maxWidth: '640px',
+              width: '100%',
+              margin: 'auto',
+              maxHeight: 'min(90vh, 720px)',
+              overflowY: 'auto',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              padding: '2.25rem'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+              <div>
+                <span style={{
+                  display: 'inline-block',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  color: '#444444',
+                  backgroundColor: '#f2f2f2',
+                  border: '1px solid #e5e5e5',
+                  padding: '0.2rem 0.55rem',
+                  borderRadius: '4px',
+                  marginBottom: '0.5rem'
+                }}>
+                  QA &amp; Defect Tracking
+                </span>
+                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#1e1e1e', margin: 0, letterSpacing: '-0.02em' }}>
+                  Report Software Defect
+                </h2>
+                <p style={{ fontSize: '0.84rem', color: '#666666', margin: '0.35rem 0 0 0' }}>
+                  Submit reproducible issue details, system environment, and expected outcomes for triage.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowReportModal(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.4rem',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#666666',
+                  transition: 'background-color 0.15s ease, color 0.15s ease'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f3f4f6'; e.currentTarget.style.color = '#1e1e1e'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#666666'; }}
+                aria-label="Close modal"
+              >
+                <X size={20} />
+              </button>
+            </div>
 
             <form onSubmit={handleReportBug} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
                   Target Project *
                 </label>
                 <select
                   value={reportFormData.projectId}
                   onChange={(e) => setReportFormData({ ...reportFormData, projectId: e.target.value })}
-                  style={{ width: '100%', padding: '0.55rem 0.75rem', border: '1px solid #d4d4d4', borderRadius: '6px', fontSize: '0.85rem' }}
+                  className="input-field"
                 >
                   {projects.map((p) => (
                     <option key={p.projectId} value={p.projectId}>
@@ -487,7 +574,7 @@ const MemberBugsPage = () => {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
                   Defect Title *
                 </label>
                 <input
@@ -496,19 +583,19 @@ const MemberBugsPage = () => {
                   placeholder="e.g. Session token expiration throws unhandled 500 internal server error"
                   value={reportFormData.title}
                   onChange={(e) => setReportFormData({ ...reportFormData, title: e.target.value })}
-                  style={{ width: '100%', padding: '0.55rem 0.75rem', border: '1px solid #d4d4d4', borderRadius: '6px', fontSize: '0.85rem' }}
+                  className="input-field"
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
                     Severity
                   </label>
                   <select
                     value={reportFormData.severity}
                     onChange={(e) => setReportFormData({ ...reportFormData, severity: e.target.value })}
-                    style={{ width: '100%', padding: '0.55rem 0.75rem', border: '1px solid #d4d4d4', borderRadius: '6px', fontSize: '0.85rem' }}
+                    className="input-field"
                   >
                     <option value="LOW">LOW</option>
                     <option value="MEDIUM">MEDIUM</option>
@@ -518,13 +605,13 @@ const MemberBugsPage = () => {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
                     Priority
                   </label>
                   <select
                     value={reportFormData.priority}
                     onChange={(e) => setReportFormData({ ...reportFormData, priority: e.target.value })}
-                    style={{ width: '100%', padding: '0.55rem 0.75rem', border: '1px solid #d4d4d4', borderRadius: '6px', fontSize: '0.85rem' }}
+                    className="input-field"
                   >
                     <option value="LOW">LOW</option>
                     <option value="MEDIUM">MEDIUM</option>
@@ -535,7 +622,7 @@ const MemberBugsPage = () => {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
                   Environment (Browser / Device / OS)
                 </label>
                 <input
@@ -543,12 +630,12 @@ const MemberBugsPage = () => {
                   placeholder="e.g. Chrome 122 on Windows 11 / Node 20"
                   value={reportFormData.environment}
                   onChange={(e) => setReportFormData({ ...reportFormData, environment: e.target.value })}
-                  style={{ width: '100%', padding: '0.55rem 0.75rem', border: '1px solid #d4d4d4', borderRadius: '6px', fontSize: '0.85rem' }}
+                  className="input-field"
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
                   Steps to Reproduce
                 </label>
                 <textarea
@@ -556,13 +643,14 @@ const MemberBugsPage = () => {
                   placeholder="1. Navigate to /login&#10;2. Input expired credentials&#10;3. Click submit"
                   value={reportFormData.stepsToReproduce}
                   onChange={(e) => setReportFormData({ ...reportFormData, stepsToReproduce: e.target.value })}
-                  style={{ width: '100%', padding: '0.55rem 0.75rem', border: '1px solid #d4d4d4', borderRadius: '6px', fontSize: '0.85rem' }}
+                  className="input-field"
+                  style={{ resize: 'vertical' }}
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
                     Expected Outcome
                   </label>
                   <textarea
@@ -570,12 +658,13 @@ const MemberBugsPage = () => {
                     placeholder="Clear error toast shown..."
                     value={reportFormData.expectedBehavior}
                     onChange={(e) => setReportFormData({ ...reportFormData, expectedBehavior: e.target.value })}
-                    style={{ width: '100%', padding: '0.55rem 0.75rem', border: '1px solid #d4d4d4', borderRadius: '6px', fontSize: '0.85rem' }}
+                    className="input-field"
+                    style={{ resize: 'vertical' }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
                     Actual Outcome
                   </label>
                   <textarea
@@ -583,47 +672,108 @@ const MemberBugsPage = () => {
                     placeholder="Page crashes with unhandled exception..."
                     value={reportFormData.actualBehavior}
                     onChange={(e) => setReportFormData({ ...reportFormData, actualBehavior: e.target.value })}
-                    style={{ width: '100%', padding: '0.55rem 0.75rem', border: '1px solid #d4d4d4', borderRadius: '6px', fontSize: '0.85rem' }}
+                    className="input-field"
+                    style={{ resize: 'vertical' }}
                   />
                 </div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '0.75rem',
+                marginTop: '0.75rem',
+                paddingTop: '1.25rem',
+                borderTop: '1px solid #f0f0f0'
+              }}>
                 <button
                   type="button"
                   onClick={() => setShowReportModal(false)}
-                  className="btn btn-secondary"
-                  style={{ fontSize: '0.85rem' }}
+                  className="btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="btn btn-primary"
-                  style={{ fontSize: '0.85rem' }}
+                  className="btn-primary"
                 >
                   Submit Bug Report
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* MODAL: MARK RESOLVED (Developer) */}
-      {showResolveModal && selectedBug && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '1rem' }}>
-          <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', maxWidth: '520px', width: '100%', border: '1px solid #d4d4d4', padding: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#2b2b2b', margin: '0 0 0.35rem 0' }}>
-              Resolve Defect: {selectedBug.bugCode}
-            </h2>
-            <p style={{ fontSize: '0.82rem', color: '#666666', margin: '0 0 1.25rem 0' }}>
-              Describe the applied code fix, commit/PR details, and verification steps for QA retesting.
-            </p>
+      {showResolveModal && selectedBug && createPortal(
+        <div
+          onClick={() => setShowResolveModal(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="card animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '14px',
+              maxWidth: '540px',
+              width: '100%',
+              margin: 'auto',
+              maxHeight: 'min(90vh, 720px)',
+              overflowY: 'auto',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              padding: '2.25rem'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+              <div>
+                <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#1e1e1e', margin: '0 0 0.35rem 0' }}>
+                  Resolve Defect: {selectedBug.bugCode}
+                </h2>
+                <p style={{ fontSize: '0.84rem', color: '#666666', margin: 0 }}>
+                  Describe the applied code fix, commit/PR details, and verification steps for QA retesting.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowResolveModal(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.4rem',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#666666'
+                }}
+              >
+                <X size={20} />
+              </button>
+            </div>
 
             <form onSubmit={handleSubmitResolve} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
                   Resolution Notes *
                 </label>
                 <textarea
@@ -632,46 +782,107 @@ const MemberBugsPage = () => {
                   placeholder="e.g. Configured JwtAuthenticationEntryPoint to catch expired claims and return 401 Unauthorized."
                   value={resolveNotes}
                   onChange={(e) => setResolveNotes(e.target.value)}
-                  style={{ width: '100%', padding: '0.55rem 0.75rem', border: '1px solid #d4d4d4', borderRadius: '6px', fontSize: '0.85rem' }}
+                  className="input-field"
+                  style={{ resize: 'vertical' }}
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '0.75rem',
+                marginTop: '0.5rem',
+                paddingTop: '1.25rem',
+                borderTop: '1px solid #f0f0f0'
+              }}>
                 <button
                   type="button"
                   onClick={() => setShowResolveModal(false)}
-                  className="btn btn-secondary"
-                  style={{ fontSize: '0.85rem' }}
+                  className="btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="btn btn-primary"
-                  style={{ fontSize: '0.85rem' }}
+                  className="btn-primary"
                 >
                   Mark as Resolved
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* MODAL: RETEST FAIL & REOPEN (QA) */}
-      {showReopenModal && selectedBug && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '1rem' }}>
-          <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', maxWidth: '520px', width: '100%', border: '1px solid #d4d4d4', padding: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#c92a2a', margin: '0 0 0.35rem 0' }}>
-              Retest Failed: Reopen Defect {selectedBug.bugCode}
-            </h2>
-            <p style={{ fontSize: '0.82rem', color: '#666666', margin: '0 0 1.25rem 0' }}>
-              Provide exact failure details and screenshots/logs so the developer can address regressions.
-            </p>
+      {showReopenModal && selectedBug && createPortal(
+        <div
+          onClick={() => setShowReopenModal(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="card animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '14px',
+              maxWidth: '540px',
+              width: '100%',
+              margin: 'auto',
+              maxHeight: 'min(90vh, 720px)',
+              overflowY: 'auto',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              padding: '2.25rem'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+              <div>
+                <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#c92a2a', margin: '0 0 0.35rem 0' }}>
+                  Retest Failed: Reopen Defect {selectedBug.bugCode}
+                </h2>
+                <p style={{ fontSize: '0.84rem', color: '#666666', margin: 0 }}>
+                  Provide exact failure details and screenshots/logs so the developer can address regressions.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowReopenModal(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.4rem',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#666666'
+                }}
+              >
+                <X size={20} />
+              </button>
+            </div>
 
             <form onSubmit={handleSubmitReopen} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#2b2b2b', marginBottom: '0.4rem' }}>
                   Retest Failure Details *
                 </label>
                 <textarea
@@ -680,45 +891,95 @@ const MemberBugsPage = () => {
                   placeholder="e.g. Verified on staging build v1.0.2: Token refresh still fails when header has malformed bearer prefix."
                   value={reopenNotes}
                   onChange={(e) => setReopenNotes(e.target.value)}
-                  style={{ width: '100%', padding: '0.55rem 0.75rem', border: '1px solid #d4d4d4', borderRadius: '6px', fontSize: '0.85rem' }}
+                  className="input-field"
+                  style={{ resize: 'vertical' }}
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '0.75rem',
+                marginTop: '0.5rem',
+                paddingTop: '1.25rem',
+                borderTop: '1px solid #f0f0f0'
+              }}>
                 <button
                   type="button"
                   onClick={() => setShowReopenModal(false)}
-                  className="btn btn-secondary"
-                  style={{ fontSize: '0.85rem' }}
+                  className="btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  style={{ padding: '0.5rem 1rem', backgroundColor: '#c92a2a', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' }}
+                  style={{
+                    padding: '0.55rem 1.2rem',
+                    backgroundColor: '#c92a2a',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '0.88rem',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
                 >
                   Confirm Reopen
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* DETAIL MODAL WITH DISCUSSION */}
-      {showDetailModal && activeBugDetail && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '1rem' }}>
-          <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', maxWidth: '680px', width: '100%', maxHeight: '90vh', overflowY: 'auto', border: '1px solid #d4d4d4', padding: '1.75rem' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1rem', borderBottom: '1px solid #ececec', paddingBottom: '0.75rem' }}>
+      {showDetailModal && activeBugDetail && createPortal(
+        <div
+          onClick={() => setShowDetailModal(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="card animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '14px',
+              maxWidth: '680px',
+              width: '100%',
+              margin: 'auto',
+              maxHeight: 'min(90vh, 720px)',
+              overflowY: 'auto',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              padding: '2.25rem'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.25rem', borderBottom: '1px solid #ececec', paddingBottom: '1rem' }}>
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem' }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 800, padding: '0.15rem 0.45rem', backgroundColor: '#f0f0f0', color: '#2b2b2b', borderRadius: '4px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 800, padding: '0.2rem 0.5rem', backgroundColor: '#f0f0f0', color: '#2b2b2b', borderRadius: '4px' }}>
                     {activeBugDetail.bugCode}
                   </span>
                   <span style={{
-                    padding: '0.15rem 0.45rem',
-                    borderRadius: '3px',
-                    fontSize: '0.7rem',
+                    padding: '0.2rem 0.5rem',
+                    borderRadius: '4px',
+                    fontSize: '0.72rem',
                     fontWeight: 800,
                     backgroundColor: getSeverityBadge(activeBugDetail.severity).bg,
                     color: getSeverityBadge(activeBugDetail.severity).color
@@ -726,9 +987,9 @@ const MemberBugsPage = () => {
                     {activeBugDetail.severity}
                   </span>
                   <span style={{
-                    padding: '0.15rem 0.45rem',
-                    borderRadius: '3px',
-                    fontSize: '0.7rem',
+                    padding: '0.2rem 0.5rem',
+                    borderRadius: '4px',
+                    fontSize: '0.72rem',
                     fontWeight: 800,
                     backgroundColor: getStatusBadge(activeBugDetail.status).bg,
                     color: getStatusBadge(activeBugDetail.status).color
@@ -736,24 +997,35 @@ const MemberBugsPage = () => {
                     {activeBugDetail.status}
                   </span>
                 </div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#2b2b2b', margin: 0 }}>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#1e1e1e', margin: 0 }}>
                   {activeBugDetail.title}
                 </h3>
               </div>
 
               <button
+                type="button"
                 onClick={() => setShowDetailModal(false)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem', color: '#666666' }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.4rem',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#666666'
+                }}
               >
                 <X size={20} />
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
               {activeBugDetail.stepsToReproduce && (
                 <div>
-                  <h4 style={{ fontSize: '0.78rem', fontWeight: 700, color: '#666666', textTransform: 'uppercase', margin: '0 0 0.25rem 0' }}>Steps to Reproduce</h4>
-                  <pre style={{ fontSize: '0.82rem', color: '#2b2b2b', margin: 0, padding: '0.65rem', backgroundColor: '#fafafa', borderRadius: '4px', border: '1px solid #f0f0f0', whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>
+                  <h4 style={{ fontSize: '0.78rem', fontWeight: 700, color: '#666666', textTransform: 'uppercase', margin: '0 0 0.35rem 0' }}>Steps to Reproduce</h4>
+                  <pre style={{ fontSize: '0.84rem', color: '#2b2b2b', margin: 0, padding: '0.75rem 1rem', backgroundColor: '#fafafa', borderRadius: '6px', border: '1px solid #f0f0f0', whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>
                     {activeBugDetail.stepsToReproduce}
                   </pre>
                 </div>
@@ -761,8 +1033,8 @@ const MemberBugsPage = () => {
 
               {activeBugDetail.resolutionNotes && (
                 <div>
-                  <h4 style={{ fontSize: '0.78rem', fontWeight: 700, color: '#1c7ed6', textTransform: 'uppercase', margin: '0 0 0.25rem 0' }}>Developer Fix Notes</h4>
-                  <p style={{ fontSize: '0.84rem', color: '#2b2b2b', margin: 0, padding: '0.65rem', backgroundColor: '#f0f8ff', borderRadius: '4px', border: '1px solid #d0ebff', lineHeight: 1.4 }}>
+                  <h4 style={{ fontSize: '0.78rem', fontWeight: 700, color: '#1c7ed6', textTransform: 'uppercase', margin: '0 0 0.35rem 0' }}>Developer Fix Notes</h4>
+                  <p style={{ fontSize: '0.84rem', color: '#2b2b2b', margin: 0, padding: '0.75rem 1rem', backgroundColor: '#f0f8ff', borderRadius: '6px', border: '1px solid #d0ebff', lineHeight: 1.5 }}>
                     {activeBugDetail.resolutionNotes}
                   </p>
                 </div>
@@ -770,8 +1042,8 @@ const MemberBugsPage = () => {
 
               {activeBugDetail.retestNotes && (
                 <div>
-                  <h4 style={{ fontSize: '0.78rem', fontWeight: 700, color: '#2b2b2b', textTransform: 'uppercase', margin: '0 0 0.25rem 0' }}>Retest Audit Log</h4>
-                  <p style={{ fontSize: '0.84rem', color: '#2b2b2b', margin: 0, padding: '0.65rem', backgroundColor: '#fafafa', borderRadius: '4px', border: '1px solid #e0e0e0', lineHeight: 1.4 }}>
+                  <h4 style={{ fontSize: '0.78rem', fontWeight: 700, color: '#2b2b2b', textTransform: 'uppercase', margin: '0 0 0.35rem 0' }}>Retest Audit Log</h4>
+                  <p style={{ fontSize: '0.84rem', color: '#2b2b2b', margin: 0, padding: '0.75rem 1rem', backgroundColor: '#fafafa', borderRadius: '6px', border: '1px solid #e0e0e0', lineHeight: 1.5 }}>
                     {activeBugDetail.retestNotes}
                   </p>
                 </div>
@@ -779,38 +1051,40 @@ const MemberBugsPage = () => {
             </div>
 
             {/* Discussion Thread */}
-            <div style={{ borderTop: '1px solid #ececec', paddingTop: '1rem' }}>
-              <h4 style={{ fontSize: '0.88rem', fontWeight: 800, color: '#2b2b2b', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <MessageSquare size={15} /> Discussion ({activeBugDetail.comments?.length || 0})
+            <div style={{ borderTop: '1px solid #ececec', paddingTop: '1.25rem' }}>
+              <h4 style={{ fontSize: '0.92rem', fontWeight: 800, color: '#1e1e1e', marginBottom: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                <MessageSquare size={16} /> Discussion ({activeBugDetail.comments?.length || 0})
               </h4>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '1rem', maxHeight: '180px', overflowY: 'auto' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.15rem', maxHeight: '180px', overflowY: 'auto' }}>
                 {activeBugDetail.comments?.map((c) => (
-                  <div key={c.commentId} style={{ padding: '0.55rem 0.75rem', backgroundColor: '#fafafa', borderRadius: '4px', border: '1px solid #e8e8e8', fontSize: '0.8rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.15rem' }}>
-                      <strong style={{ color: '#2b2b2b' }}>{c.authorName}</strong>
+                  <div key={c.commentId} style={{ padding: '0.65rem 0.85rem', backgroundColor: '#fafafa', borderRadius: '6px', border: '1px solid #e8e8e8', fontSize: '0.82rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
+                      <strong style={{ color: '#1e1e1e' }}>{c.authorName}</strong>
                       <span style={{ fontSize: '0.7rem', color: '#8c8c8c' }}>{new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
-                    <p style={{ margin: 0, color: '#444444' }}>{c.content}</p>
+                    <p style={{ margin: 0, color: '#444444', lineHeight: 1.4 }}>{c.content}</p>
                   </div>
                 ))}
               </div>
 
-              <form onSubmit={handleAddComment} style={{ display: 'flex', gap: '0.5rem' }}>
+              <form onSubmit={handleAddComment} style={{ display: 'flex', gap: '0.65rem' }}>
                 <input
                   type="text"
                   placeholder="Post reply to this defect..."
                   value={commentContent}
                   onChange={(e) => setCommentContent(e.target.value)}
-                  style={{ flex: 1, padding: '0.45rem 0.75rem', border: '1px solid #d4d4d4', borderRadius: '4px', fontSize: '0.82rem' }}
+                  className="input-field"
+                  style={{ flex: 1 }}
                 />
-                <button type="submit" className="btn btn-secondary" style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem' }}>
-                  <Send size={13} />
+                <button type="submit" className="btn-secondary" style={{ padding: '0.5rem 1rem' }}>
+                  <Send size={14} />
                 </button>
               </form>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

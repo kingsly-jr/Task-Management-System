@@ -213,9 +213,64 @@ public class ClientService {
         clientRepository.save(client);
     }
 
+    @Transactional
+    public ClientDto.ClientResponse provisionOrResetPortalAccount(Long clientId, String rawPassword) {
+        Client client = clientRepository.findById(clientId)
+                .filter(c -> !c.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + clientId));
+
+        String email = client.getEmail().toLowerCase().trim();
+        String password = (rawPassword != null && !rawPassword.isBlank())
+                ? rawPassword.trim()
+                : "Client@" + (100 + (int)(Math.random() * 900));
+
+        User clientUser = client.getUser();
+        if (clientUser == null) {
+            // Check if user already exists with this email
+            clientUser = userRepository.findByEmailIgnoreCase(email).orElse(null);
+            if (clientUser == null) {
+                Role clientRole = roleRepository.findByRoleCode("CLIENT")
+                        .orElseThrow(() -> new ResourceNotFoundException("Role CLIENT not found"));
+
+                String[] nameParts = client.getContactPerson().trim().split("\\s+", 2);
+                String firstName = nameParts[0];
+                String lastName = nameParts.length > 1 ? nameParts[1] : "";
+
+                clientUser = User.builder()
+                        .firstName(firstName)
+                        .lastName(lastName)
+                        .email(email)
+                        .phone(client.getPhone())
+                        .role(clientRole)
+                        .passwordHash(passwordEncoder.encode(password))
+                        .status("ACTIVE")
+                        .isFirstLogin(true)
+                        .isDeleted(false)
+                        .build();
+                clientUser = userRepository.save(clientUser);
+            } else {
+                clientUser.setPasswordHash(passwordEncoder.encode(password));
+                clientUser.setFirstLogin(true);
+                clientUser.setStatus("ACTIVE");
+                clientUser = userRepository.save(clientUser);
+            }
+            client.setUser(clientUser);
+            client = clientRepository.save(client);
+        } else {
+            clientUser.setPasswordHash(passwordEncoder.encode(password));
+            clientUser.setFirstLogin(true);
+            clientUser.setStatus("ACTIVE");
+            userRepository.save(clientUser);
+        }
+
+        ClientDto.ClientResponse response = mapToResponse(client);
+        response.setTemporaryPassword(password);
+        return response;
+    }
+
     public ClientDto.ClientResponse mapToResponse(Client client) {
         long projectCount = projectRepository.findByClient_ClientIdAndIsDeletedFalse(client.getClientId()).size();
-        return new ClientDto.ClientResponse(
+        ClientDto.ClientResponse response = new ClientDto.ClientResponse(
                 client.getClientId(),
                 client.getCompanyName(),
                 client.getContactPerson(),
@@ -230,5 +285,14 @@ public class ClientService {
                 client.getCreatedAt(),
                 client.getUpdatedAt()
         );
+        response.setHasPortalAccount(client.getUser() != null);
+        return response;
+    }
+
+    @Transactional(readOnly = true)
+    public ClientDto.ClientResponse getMyOrganization(Long userId) {
+        Client client = clientRepository.findByUser_UserIdAndIsDeletedFalse(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Client organization profile not found for user ID: " + userId));
+        return mapToResponse(client);
     }
 }

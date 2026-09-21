@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../api/client';
 import {
   X,
@@ -29,7 +30,13 @@ const TaskDetailModal = ({ taskId, onClose, onTaskUpdated }) => {
   useEffect(() => {
     if (taskId) {
       fetchTaskDetails();
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
     }
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [taskId]);
 
   const fetchTaskDetails = async () => {
@@ -108,11 +115,52 @@ const TaskDetailModal = ({ taskId, onClose, onTaskUpdated }) => {
 
   if (!taskId) return null;
 
-  return (
-    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '1rem' }}>
-      <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', maxWidth: '750px', width: '100%', maxHeight: '90vh', display: 'flex', flexDirection: 'column', border: '1px solid #d4d4d4', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+  return createPortal(
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.65)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 99999,
+        padding: '1.5rem 1rem',
+        overflowY: 'auto'
+      }}
+    >
+      <div
+        className="card animate-fade-in"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          backgroundColor: '#ffffff',
+          borderRadius: '14px',
+          maxWidth: '780px',
+          width: '100%',
+          margin: 'auto',
+          maxHeight: 'min(90vh, 760px)',
+          display: 'flex',
+          flexDirection: 'column',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.45)',
+          overflow: 'hidden'
+        }}
+      >
         {/* Header */}
-        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #d4d4d4', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div style={{
+          padding: '1.25rem 1.5rem',
+          borderBottom: '1px solid #e5e5e5',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          backgroundColor: '#fafafa'
+        }}>
           <div>
             {task && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
@@ -390,7 +438,8 @@ const TaskDetailModal = ({ taskId, onClose, onTaskUpdated }) => {
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
