@@ -238,17 +238,9 @@ const MemberBugsPage = () => {
             Bug Workspace &amp; QA Retest Hub
           </h1>
           <p style={{ color: '#666666', fontSize: '0.92rem', margin: 0 }}>
-            Resolve assigned defects, report software issues, and execute QA verification cycles.
+            Resolve defects assigned to you and execute QA retest verification cycles.
           </p>
         </div>
-
-        <button
-          onClick={() => setShowReportModal(true)}
-          className="btn btn-primary"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
-        >
-          <Plus size={16} /> Report New Defect
-        </button>
       </div>
 
       {/* Notifications */}

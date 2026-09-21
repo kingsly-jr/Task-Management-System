@@ -22,7 +22,7 @@ api.interceptors.response.use(
   (response) => response.data,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Don't auto-redirect if checking auth status or already on login page
+      // Token expired or invalid – clear session and redirect to login
       const currentPath = window.location.pathname;
       if (!currentPath.includes('/login') && currentPath !== '/') {
         localStorage.removeItem('taskflow_token');

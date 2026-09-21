@@ -909,13 +909,7 @@ const ProjectDetailsPage = () => {
             </div>
           </div>
 
-          <button
-            onClick={handleOpenEditModal}
-            className="btn btn-secondary"
-            style={{ fontSize: '0.82rem', padding: '0.5rem 1rem' }}
-          >
-            <Edit2 size={14} /> Update Project Status
-          </button>
+
         </div>
 
         {/* Progress bar */}

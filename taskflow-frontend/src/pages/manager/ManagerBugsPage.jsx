@@ -15,7 +15,8 @@ import {
   Send,
   X,
   ShieldAlert,
-  ArrowRight
+  ArrowRight,
+  Plus
 } from 'lucide-react';
 
 const ManagerBugsPage = () => {
@@ -38,6 +39,21 @@ const ManagerBugsPage = () => {
   const [selectedAssigneeId, setSelectedAssigneeId] = useState('');
   const [commentContent, setCommentContent] = useState('');
 
+  // Report Defect Modal
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportForm, setReportForm] = useState({
+    projectId: '',
+    title: '',
+    description: '',
+    stepsToReproduce: '',
+    expectedBehavior: '',
+    actualBehavior: '',
+    severity: 'MEDIUM',
+    priority: 'MEDIUM',
+    environment: 'Chrome / Windows 11'
+  });
+  const [reportSubmitting, setReportSubmitting] = useState(false);
+
   useEffect(() => {
     fetchProjects();
   }, []);
@@ -51,7 +67,8 @@ const ManagerBugsPage = () => {
   }, [selectedProjectId, statusFilter, severityFilter, search]);
 
   useEffect(() => {
-    if (selectedBugId && activeBugDetail) {
+    const isAnyOpen = (selectedBugId && activeBugDetail) || showReportModal;
+    if (isAnyOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -59,7 +76,7 @@ const ManagerBugsPage = () => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [selectedBugId, activeBugDetail]);
+  }, [selectedBugId, activeBugDetail, showReportModal]);
 
   const fetchProjects = async () => {
     try {
@@ -68,12 +85,36 @@ const ManagerBugsPage = () => {
       setProjects(list);
       if (list.length > 0) {
         setSelectedProjectId(list[0].projectId);
+        setReportForm((prev) => ({ ...prev, projectId: list[0].projectId }));
       } else {
         setLoading(false);
       }
     } catch (err) {
       setError(err.message || 'Failed to load projects');
       setLoading(false);
+    }
+  };
+
+  const handleReportBug = async (e) => {
+    e.preventDefault();
+    setReportSubmitting(true);
+    setError('');
+    try {
+      await api.post(`/projects/${reportForm.projectId}/bugs`, reportForm);
+      setShowReportModal(false);
+      setSuccessMsg('Defect reported successfully and queued for assignment!');
+      // Refresh if the selected project matches
+      if (reportForm.projectId === selectedProjectId) {
+        fetchBugs();
+        fetchBugStats(selectedProjectId);
+      } else {
+        setSelectedProjectId(reportForm.projectId);
+      }
+      setTimeout(() => setSuccessMsg(''), 3500);
+    } catch (err) {
+      setError(err.message || 'Failed to submit defect report');
+    } finally {
+      setReportSubmitting(false);
     }
   };
 
@@ -201,20 +242,34 @@ const ManagerBugsPage = () => {
           </p>
         </div>
 
-        {/* Project Selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: '#ffffff', border: '1px solid #d4d4d4', borderRadius: '6px', padding: '0.4rem 0.75rem' }}>
-          <FolderKanban size={16} color="#666666" />
-          <select
-            value={selectedProjectId}
-            onChange={(e) => setSelectedProjectId(e.target.value)}
-            style={{ border: 'none', background: 'transparent', fontSize: '0.85rem', fontWeight: 700, color: '#2b2b2b', outline: 'none', cursor: 'pointer' }}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          {/* Project Selector */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: '#ffffff', border: '1px solid #d4d4d4', borderRadius: '6px', padding: '0.4rem 0.75rem' }}>
+            <FolderKanban size={16} color="#666666" />
+            <select
+              value={selectedProjectId}
+              onChange={(e) => setSelectedProjectId(e.target.value)}
+              style={{ border: 'none', background: 'transparent', fontSize: '0.85rem', fontWeight: 700, color: '#2b2b2b', outline: 'none', cursor: 'pointer' }}
+            >
+              {projects.map((p) => (
+                <option key={p.projectId} value={p.projectId}>
+                  {p.projectCode} — {p.projectName}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Report New Defect Button */}
+          <button
+            onClick={() => {
+              setReportForm((prev) => ({ ...prev, projectId: selectedProjectId || (projects[0]?.projectId || '') }));
+              setShowReportModal(true);
+            }}
+            className="btn btn-primary"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
           >
-            {projects.map((p) => (
-              <option key={p.projectId} value={p.projectId}>
-                {p.projectCode} — {p.projectName}
-              </option>
-            ))}
-          </select>
+            <Plus size={16} /> Report New Defect
+          </button>
         </div>
       </div>
 
@@ -432,6 +487,173 @@ const ManagerBugsPage = () => {
       </div>
 
       {/* DETAIL & TRIAGE MODAL */}
+      {/* REPORT NEW DEFECT MODAL */}
+      {showReportModal && createPortal(
+        <div
+          onClick={() => setShowReportModal(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1.5rem 1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            className="animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '16px',
+              maxWidth: '580px',
+              width: '100%',
+              padding: '2rem 2.25rem',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              maxHeight: '92vh',
+              overflowY: 'auto'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+              <div>
+                <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#1e1e1e', margin: '0 0 0.2rem 0' }}>Report New Defect</h2>
+                <p style={{ fontSize: '0.82rem', color: '#666666', margin: 0 }}>Document a software defect for the development team to resolve.</p>
+              </div>
+              <button onClick={() => setShowReportModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#666666' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleReportBug} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {/* Project */}
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.3rem' }}>Project *</label>
+                <select
+                  required
+                  value={reportForm.projectId}
+                  onChange={(e) => setReportForm({ ...reportForm, projectId: e.target.value })}
+                  className="form-control"
+                >
+                  {projects.map((p) => (
+                    <option key={p.projectId} value={p.projectId}>{p.projectCode} — {p.projectName}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Title */}
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.3rem' }}>Defect Title *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Short, descriptive defect title"
+                  value={reportForm.title}
+                  onChange={(e) => setReportForm({ ...reportForm, title: e.target.value })}
+                  className="form-control"
+                />
+              </div>
+
+              {/* Severity & Priority */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.3rem' }}>Severity</label>
+                  <select value={reportForm.severity} onChange={(e) => setReportForm({ ...reportForm, severity: e.target.value })} className="form-control">
+                    <option value="CRITICAL">CRITICAL</option>
+                    <option value="HIGH">HIGH</option>
+                    <option value="MEDIUM">MEDIUM</option>
+                    <option value="LOW">LOW</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.3rem' }}>Priority</label>
+                  <select value={reportForm.priority} onChange={(e) => setReportForm({ ...reportForm, priority: e.target.value })} className="form-control">
+                    <option value="URGENT">URGENT</option>
+                    <option value="HIGH">HIGH</option>
+                    <option value="MEDIUM">MEDIUM</option>
+                    <option value="LOW">LOW</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.3rem' }}>Description *</label>
+                <textarea
+                  required
+                  rows={3}
+                  placeholder="Describe the defect in detail..."
+                  value={reportForm.description}
+                  onChange={(e) => setReportForm({ ...reportForm, description: e.target.value })}
+                  className="form-control"
+                />
+              </div>
+
+              {/* Steps to Reproduce */}
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.3rem' }}>Steps to Reproduce</label>
+                <textarea
+                  rows={3}
+                  placeholder="1. Navigate to...&#10;2. Click on...&#10;3. Observe..."
+                  value={reportForm.stepsToReproduce}
+                  onChange={(e) => setReportForm({ ...reportForm, stepsToReproduce: e.target.value })}
+                  className="form-control"
+                />
+              </div>
+
+              {/* Expected vs Actual */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#0ca678', marginBottom: '0.3rem' }}>Expected Behavior</label>
+                  <textarea
+                    rows={2}
+                    placeholder="What should happen?"
+                    value={reportForm.expectedBehavior}
+                    onChange={(e) => setReportForm({ ...reportForm, expectedBehavior: e.target.value })}
+                    className="form-control"
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#c92a2a', marginBottom: '0.3rem' }}>Actual Behavior</label>
+                  <textarea
+                    rows={2}
+                    placeholder="What actually happens?"
+                    value={reportForm.actualBehavior}
+                    onChange={(e) => setReportForm({ ...reportForm, actualBehavior: e.target.value })}
+                    className="form-control"
+                  />
+                </div>
+              </div>
+
+              {/* Environment */}
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.3rem' }}>Environment</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Chrome 120 / Windows 11 / Staging"
+                  value={reportForm.environment}
+                  onChange={(e) => setReportForm({ ...reportForm, environment: e.target.value })}
+                  className="form-control"
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', borderTop: '1px solid #e5e5e5', paddingTop: '1rem', marginTop: '0.25rem' }}>
+                <button type="button" onClick={() => setShowReportModal(false)} className="btn btn-secondary">Cancel</button>
+                <button type="submit" className="btn btn-primary" disabled={reportSubmitting}>
+                  {reportSubmitting ? 'Reporting...' : 'Submit Defect Report'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
       {selectedBugId && activeBugDetail && createPortal(
         <div
           onClick={() => setSelectedBugId(null)}

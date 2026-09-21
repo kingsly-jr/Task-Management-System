@@ -61,8 +61,8 @@ public class ProjectController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
-    @Operation(summary = "Update project details, budget, dates or status (Admin or assigned PM)")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Update project details, budget, dates or status (Admin only)")
     public ResponseEntity<ApiResponse<ProjectDto.ProjectResponse>> updateProject(
             @PathVariable Long id,
             @Valid @RequestBody ProjectDto.UpdateProjectRequest request
