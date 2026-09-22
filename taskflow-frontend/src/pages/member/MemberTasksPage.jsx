@@ -10,8 +10,11 @@ import {
   Play,
   CheckCircle,
   Eye,
-  AlertCircle
+  AlertCircle,
+  Paperclip,
+  Globe
 } from 'lucide-react';
+import SubmitReviewModal from '../../components/SubmitReviewModal';
 
 const MemberTasksPage = () => {
   const [tasks, setTasks] = useState([]);
@@ -20,6 +23,7 @@ const MemberTasksPage = () => {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [error, setError] = useState('');
   const [activeTaskId, setActiveTaskId] = useState(null);
+  const [reviewTask, setReviewTask] = useState(null);
 
   useEffect(() => {
     fetchMyTasks();
@@ -189,6 +193,12 @@ const MemberTasksPage = () => {
                         <span style={{ fontSize: '0.72rem', color: '#8c8c8c' }}>{t.projectName}</span>
                       </div>
                       <div style={{ fontWeight: 700, color: '#2b2b2b' }}>{t.title}</div>
+                      {(t.reviewUrl || t.reviewDocumentName) && (
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.25rem', padding: '0.15rem 0.4rem', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '4px', fontSize: '0.68rem', color: '#15803d', fontWeight: 700 }}>
+                          <Paperclip size={10} /> Deliverables Attached
+                          {t.reviewUrl && <Globe size={10} />}
+                        </div>
+                      )}
                     </td>
 
                     <td style={{ padding: '0.85rem 1rem' }}>
@@ -222,19 +232,51 @@ const MemberTasksPage = () => {
                     </td>
 
                     <td style={{ padding: '0.85rem 1rem' }}>
-                      <span
-                        style={{
-                          display: 'inline-block',
-                          padding: '0.2rem 0.55rem',
-                          borderRadius: '4px',
-                          fontSize: '0.72rem',
-                          fontWeight: 700,
-                          backgroundColor: t.status === 'COMPLETED' ? '#e6fcf5' : t.status === 'IN_PROGRESS' ? '#2b2b2b' : '#f1f1f1',
-                          color: t.status === 'COMPLETED' ? '#0ca678' : t.status === 'IN_PROGRESS' ? '#ffffff' : '#666666',
-                        }}
-                      >
-                        {t.status.replace('_', ' ')}
-                      </span>
+                      {t.status === 'IN_REVIEW' && t.approvalStatus === 'PENDING_APPROVAL' ? (
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            padding: '0.2rem 0.55rem',
+                            borderRadius: '4px',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            backgroundColor: '#fff9db',
+                            color: '#d9480f',
+                            border: '1px solid #ffe066'
+                          }}
+                        >
+                          Awaiting Approval
+                        </span>
+                      ) : t.approvalStatus === 'REJECTED' ? (
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            padding: '0.2rem 0.55rem',
+                            borderRadius: '4px',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            backgroundColor: '#fff5f5',
+                            color: '#e03131',
+                            border: '1px solid #ffc9c9'
+                          }}
+                        >
+                          Changes Requested
+                        </span>
+                      ) : (
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            padding: '0.2rem 0.55rem',
+                            borderRadius: '4px',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            backgroundColor: t.status === 'COMPLETED' ? '#e6fcf5' : t.status === 'IN_PROGRESS' ? '#2b2b2b' : '#f1f1f1',
+                            color: t.status === 'COMPLETED' ? '#0ca678' : t.status === 'IN_PROGRESS' ? '#ffffff' : '#666666',
+                          }}
+                        >
+                          {t.status === 'COMPLETED' && t.approvalStatus === 'APPROVED' ? 'Approved' : t.status.replace('_', ' ')}
+                        </span>
+                      )}
                     </td>
 
                     <td style={{ padding: '0.85rem 1rem', textAlign: 'right' }}>
@@ -250,7 +292,10 @@ const MemberTasksPage = () => {
 
                         {t.status === 'IN_PROGRESS' && (
                           <button
-                            onClick={(e) => handleQuickStatus(e, t.taskId, 'IN_REVIEW')}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setReviewTask(t);
+                            }}
                             style={{ padding: '0.35rem 0.65rem', border: '1px solid #d4d4d4', backgroundColor: '#ffffff', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem', color: '#099268' }}
                           >
                             <Eye size={12} /> Review
@@ -259,10 +304,14 @@ const MemberTasksPage = () => {
 
                         {t.status === 'IN_REVIEW' && (
                           <button
-                            onClick={(e) => handleQuickStatus(e, t.taskId, 'COMPLETED')}
-                            style={{ padding: '0.35rem 0.65rem', border: '1px solid #d4d4d4', backgroundColor: '#ffffff', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem', color: '#2b8a3e' }}
+                            title="Inspect or update review deliverables"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setReviewTask(t);
+                            }}
+                            style={{ padding: '0.35rem 0.65rem', border: '1px solid #bbf7d0', backgroundColor: '#f0fdf4', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem', color: '#15803d' }}
                           >
-                            <CheckCircle size={12} /> Done
+                            <Paperclip size={12} /> Deliverables
                           </button>
                         )}
                       </div>
@@ -281,6 +330,16 @@ const MemberTasksPage = () => {
           taskId={activeTaskId}
           onClose={() => setActiveTaskId(null)}
           onTaskUpdated={fetchMyTasks}
+        />
+      )}
+
+      {/* Submit Deliverables Modal */}
+      {reviewTask && (
+        <SubmitReviewModal
+          task={reviewTask}
+          isOpen={!!reviewTask}
+          onClose={() => setReviewTask(null)}
+          onSuccess={fetchMyTasks}
         />
       )}
     </div>

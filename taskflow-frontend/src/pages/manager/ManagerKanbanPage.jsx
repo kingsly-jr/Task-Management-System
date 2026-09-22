@@ -9,7 +9,12 @@ import {
   CheckSquare,
   Calendar,
   AlertCircle,
-  Plus
+  Plus,
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  Paperclip,
+  Globe
 } from 'lucide-react';
 
 const COLUMNS = [
@@ -209,6 +214,89 @@ const ManagerKanbanPage = () => {
                           {t.priority}
                         </span>
                       </div>
+
+                      <div style={{ fontSize: '0.72rem', color: '#8c8c8c', marginBottom: '0.2rem' }}>
+                        {t.projectName}
+                      </div>
+
+                      {/* Approval Status Indicators */}
+                      {t.status === 'IN_REVIEW' && t.approvalStatus === 'PENDING_APPROVAL' && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          padding: '0.25rem 0.5rem',
+                          backgroundColor: '#eff6ff',
+                          border: '1px solid #bfdbfe',
+                          borderRadius: '4px',
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          color: '#1d4ed8',
+                          marginBottom: '0.4rem'
+                        }}>
+                          <Clock size={12} />
+                          <span>Needs Your Review & Approval (by {t.completedByName || t.submittedForReviewByName || 'Member'})</span>
+                        </div>
+                      )}
+
+                      {t.status === 'COMPLETED' && t.approvalStatus === 'APPROVED' && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          padding: '0.25rem 0.5rem',
+                          backgroundColor: '#ebfbee',
+                          border: '1px solid #b2f2bb',
+                          borderRadius: '4px',
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          color: '#2b8a3e',
+                          marginBottom: '0.4rem'
+                        }}>
+                          <CheckCircle2 size={12} />
+                          <span>Approved</span>
+                        </div>
+                      )}
+
+                      {t.approvalStatus === 'REJECTED' && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          padding: '0.25rem 0.5rem',
+                          backgroundColor: '#fff5f5',
+                          border: '1px solid #ffc9c9',
+                          borderRadius: '4px',
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          color: '#e03131',
+                          marginBottom: '0.4rem'
+                        }}>
+                          <AlertTriangle size={12} />
+                          <span>Changes Requested</span>
+                        </div>
+                      )}
+
+                      {/* Deliverables Indicator */}
+                      {(t.reviewUrl || t.reviewDocumentName) && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          padding: '0.22rem 0.45rem',
+                          backgroundColor: '#f0fdf4',
+                          border: '1px solid #bbf7d0',
+                          borderRadius: '4px',
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          color: '#15803d',
+                          marginBottom: '0.4rem'
+                        }}>
+                          <Paperclip size={12} />
+                          <span>Deliverables Ready</span>
+                          {t.reviewUrl && <Globe size={11} style={{ marginLeft: 'auto' }} />}
+                        </div>
+                      )}
 
                       {/* Title */}
                       <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2b2b2b', margin: '0 0 0.5rem 0', lineHeight: 1.4 }}>

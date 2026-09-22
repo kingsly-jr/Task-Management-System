@@ -167,8 +167,10 @@ const ProjectDetailsPage = () => {
     estimatedHours: '',
     startDate: '',
     dueDate: '',
-    assigneeIds: []
+    assigneeIds: [],
+    subtasks: []
   });
+  const [taskSubtaskInput, setTaskSubtaskInput] = useState('');
 
   // Milestones State
   const [milestones, setMilestones] = useState([]);
@@ -510,6 +512,23 @@ const ProjectDetailsPage = () => {
   };
 
   // 4. Tasks Handlers
+  const handleAddTaskModalSubtask = (e) => {
+    e.preventDefault();
+    if (!taskSubtaskInput.trim()) return;
+    setTaskFormData((prev) => ({
+      ...prev,
+      subtasks: [...(prev.subtasks || []), taskSubtaskInput.trim()],
+    }));
+    setTaskSubtaskInput('');
+  };
+
+  const handleRemoveTaskModalSubtask = (index) => {
+    setTaskFormData((prev) => ({
+      ...prev,
+      subtasks: (prev.subtasks || []).filter((_, i) => i !== index),
+    }));
+  };
+
   const handleCreateTask = async (e) => {
     e.preventDefault();
     try {
@@ -522,7 +541,8 @@ const ProjectDetailsPage = () => {
         estimatedHours: taskFormData.estimatedHours ? parseFloat(taskFormData.estimatedHours) : null,
         startDate: taskFormData.startDate || null,
         dueDate: taskFormData.dueDate || null,
-        assigneeIds: taskFormData.assigneeIds
+        assigneeIds: taskFormData.assigneeIds,
+        subtasks: taskFormData.subtasks || []
       };
       await api.post(`/projects/${id}/tasks`, payload);
       setShowCreateTaskModal(false);
@@ -534,8 +554,10 @@ const ProjectDetailsPage = () => {
         estimatedHours: '',
         startDate: '',
         dueDate: '',
-        assigneeIds: []
+        assigneeIds: [],
+        subtasks: []
       });
+      setTaskSubtaskInput('');
       setSuccessMsg('Sprint task created successfully.');
       setTimeout(() => setSuccessMsg(''), 4000);
       fetchTasks();
@@ -1387,6 +1409,25 @@ const ProjectDetailsPage = () => {
                           <span style={{ fontSize: '0.72rem', color: '#8c8c8c' }}>{t.estimatedHours}h</span>
                         )}
                       </div>
+
+                      {t.status === 'IN_REVIEW' && t.approvalStatus === 'PENDING_APPROVAL' && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          padding: '0.2rem 0.45rem',
+                          backgroundColor: '#eff6ff',
+                          border: '1px solid #bfdbfe',
+                          borderRadius: '4px',
+                          fontSize: '0.68rem',
+                          fontWeight: 700,
+                          color: '#1d4ed8',
+                          marginBottom: '0.4rem'
+                        }}>
+                          <Clock size={11} />
+                          <span>Needs Review & Approval (by {t.completedByName || t.submittedForReviewByName || 'Member'})</span>
+                        </div>
+                      )}
 
                       <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#1e1e1e', marginBottom: '0.6rem' }}>
                         {t.title}
@@ -2477,6 +2518,68 @@ const ProjectDetailsPage = () => {
                         </label>
                       );
                     })}
+                  </div>
+                )}
+              </div>
+
+              {/* Checklist & Subtasks (Optional) */}
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>
+                  Checklist & Subtasks (Optional)
+                </label>
+                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                  <input
+                    type="text"
+                    placeholder="Add a checklist item (e.g. Write integration test)..."
+                    value={taskSubtaskInput}
+                    onChange={(e) => setTaskSubtaskInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddTaskModalSubtask(e);
+                      }
+                    }}
+                    className="form-control"
+                    style={{ flex: 1 }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddTaskModalSubtask}
+                    disabled={!taskSubtaskInput.trim()}
+                    className="btn btn-secondary"
+                    style={{ padding: '0.45rem 0.85rem', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+                  >
+                    <Plus size={14} /> Add
+                  </button>
+                </div>
+                {taskFormData.subtasks && taskFormData.subtasks.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', maxHeight: '120px', overflowY: 'auto' }}>
+                    {taskFormData.subtasks.map((st, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '0.4rem 0.65rem',
+                          backgroundColor: '#f8f8f8',
+                          border: '1px solid #e5e5e5',
+                          borderRadius: '5px',
+                          fontSize: '0.8rem'
+                        }}
+                      >
+                        <span style={{ color: '#2b2b2b' }}>{st}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveTaskModalSubtask(idx)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8c8c8c', padding: '0.1rem' }}
+                          onMouseEnter={(e) => (e.currentTarget.style.color = '#e03131')}
+                          onMouseLeave={(e) => (e.currentTarget.style.color = '#8c8c8c')}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>

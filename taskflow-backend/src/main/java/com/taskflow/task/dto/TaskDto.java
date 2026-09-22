@@ -24,6 +24,7 @@ public class TaskDto {
         private Long projectId;
         private Long milestoneId;
         private List<Long> assigneeIds = new ArrayList<>();
+        private List<String> subtasks = new ArrayList<>();
 
         public CreateTaskRequest() {}
 
@@ -46,6 +47,8 @@ public class TaskDto {
         public void setMilestoneId(Long milestoneId) { this.milestoneId = milestoneId; }
         public List<Long> getAssigneeIds() { return assigneeIds; }
         public void setAssigneeIds(List<Long> assigneeIds) { this.assigneeIds = assigneeIds; }
+        public List<String> getSubtasks() { return subtasks; }
+        public void setSubtasks(List<String> subtasks) { this.subtasks = subtasks; }
     }
 
     public static class UpdateTaskRequest {
@@ -130,6 +133,20 @@ public class TaskDto {
         private long subtasksCount;
         private long completedSubtasksCount;
         private List<AssigneeSummary> assignees;
+        private String approvalStatus = "NONE";
+        private Long completedById;
+        private String completedByName;
+        private Instant completedAt;
+        private Long approvedById;
+        private String approvedByName;
+        private Instant approvedAt;
+        private String rejectionReason;
+        private String reviewUrl;
+        private String reviewDocumentName;
+        private String reviewNotes;
+        private Instant submittedForReviewAt;
+        private Long submittedForReviewById;
+        private String submittedForReviewByName;
         private Instant createdAt;
         private Instant updatedAt;
 
@@ -201,6 +218,34 @@ public class TaskDto {
         public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
         public Instant getUpdatedAt() { return updatedAt; }
         public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+        public String getApprovalStatus() { return approvalStatus; }
+        public void setApprovalStatus(String approvalStatus) { this.approvalStatus = approvalStatus; }
+        public Long getCompletedById() { return completedById; }
+        public void setCompletedById(Long completedById) { this.completedById = completedById; }
+        public String getCompletedByName() { return completedByName; }
+        public void setCompletedByName(String completedByName) { this.completedByName = completedByName; }
+        public Instant getCompletedAt() { return completedAt; }
+        public void setCompletedAt(Instant completedAt) { this.completedAt = completedAt; }
+        public Long getApprovedById() { return approvedById; }
+        public void setApprovedById(Long approvedById) { this.approvedById = approvedById; }
+        public String getApprovedByName() { return approvedByName; }
+        public void setApprovedByName(String approvedByName) { this.approvedByName = approvedByName; }
+        public Instant getApprovedAt() { return approvedAt; }
+        public void setApprovedAt(Instant approvedAt) { this.approvedAt = approvedAt; }
+        public String getRejectionReason() { return rejectionReason; }
+        public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
+        public String getReviewUrl() { return reviewUrl; }
+        public void setReviewUrl(String reviewUrl) { this.reviewUrl = reviewUrl; }
+        public String getReviewDocumentName() { return reviewDocumentName; }
+        public void setReviewDocumentName(String reviewDocumentName) { this.reviewDocumentName = reviewDocumentName; }
+        public String getReviewNotes() { return reviewNotes; }
+        public void setReviewNotes(String reviewNotes) { this.reviewNotes = reviewNotes; }
+        public Instant getSubmittedForReviewAt() { return submittedForReviewAt; }
+        public void setSubmittedForReviewAt(Instant submittedForReviewAt) { this.submittedForReviewAt = submittedForReviewAt; }
+        public Long getSubmittedForReviewById() { return submittedForReviewById; }
+        public void setSubmittedForReviewById(Long submittedForReviewById) { this.submittedForReviewById = submittedForReviewById; }
+        public String getSubmittedForReviewByName() { return submittedForReviewByName; }
+        public void setSubmittedForReviewByName(String submittedForReviewByName) { this.submittedForReviewByName = submittedForReviewByName; }
     }
 
     public static class TaskDetailResponse extends TaskResponse {

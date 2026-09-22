@@ -72,6 +72,45 @@ public class Task {
     )
     private Set<User> assignees = new HashSet<>();
 
+    @Column(name = "approval_status", length = 30)
+    private String approvalStatus = "NONE"; // NONE, PENDING_APPROVAL, APPROVED, REJECTED
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "completed_by")
+    private User completedBy;
+
+    @Column(name = "completed_at")
+    private Instant completedAt;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "approved_by")
+    private User approvedBy;
+
+    @Column(name = "approved_at")
+    private Instant approvedAt;
+
+    @Column(name = "rejection_reason", columnDefinition = "TEXT")
+    private String rejectionReason;
+
+    @Column(name = "review_url", length = 500)
+    private String reviewUrl;
+
+    @Column(name = "review_document_name", length = 255)
+    private String reviewDocumentName;
+
+    @Column(name = "review_document_path", length = 500)
+    private String reviewDocumentPath;
+
+    @Column(name = "review_notes", columnDefinition = "TEXT")
+    private String reviewNotes;
+
+    @Column(name = "submitted_for_review_at")
+    private Instant submittedForReviewAt;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "submitted_for_review_by")
+    private User submittedForReviewBy;
+
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
 
@@ -91,6 +130,9 @@ public class Task {
     public Task(Long taskId, Project project, Milestone milestone, String taskCode, String title, String description,
                 String status, String priority, BigDecimal estimatedHours, BigDecimal loggedHours,
                 LocalDate startDate, LocalDate dueDate, User createdBy, Set<User> assignees,
+                String approvalStatus, User completedBy, Instant completedAt, User approvedBy, Instant approvedAt,
+                String rejectionReason, String reviewUrl, String reviewDocumentName, String reviewDocumentPath,
+                String reviewNotes, Instant submittedForReviewAt, User submittedForReviewBy,
                 boolean isDeleted, Instant deletedAt, Instant createdAt, Instant updatedAt) {
         this.taskId = taskId;
         this.project = project;
@@ -106,6 +148,18 @@ public class Task {
         this.dueDate = dueDate;
         this.createdBy = createdBy;
         this.assignees = assignees != null ? assignees : new HashSet<>();
+        this.approvalStatus = approvalStatus != null ? approvalStatus : "NONE";
+        this.completedBy = completedBy;
+        this.completedAt = completedAt;
+        this.approvedBy = approvedBy;
+        this.approvedAt = approvedAt;
+        this.rejectionReason = rejectionReason;
+        this.reviewUrl = reviewUrl;
+        this.reviewDocumentName = reviewDocumentName;
+        this.reviewDocumentPath = reviewDocumentPath;
+        this.reviewNotes = reviewNotes;
+        this.submittedForReviewAt = submittedForReviewAt;
+        this.submittedForReviewBy = submittedForReviewBy;
         this.isDeleted = isDeleted;
         this.deletedAt = deletedAt;
         this.createdAt = createdAt;
@@ -131,6 +185,18 @@ public class Task {
         private LocalDate dueDate;
         private User createdBy;
         private Set<User> assignees = new HashSet<>();
+        private String approvalStatus = "NONE";
+        private User completedBy;
+        private Instant completedAt;
+        private User approvedBy;
+        private Instant approvedAt;
+        private String rejectionReason;
+        private String reviewUrl;
+        private String reviewDocumentName;
+        private String reviewDocumentPath;
+        private String reviewNotes;
+        private Instant submittedForReviewAt;
+        private User submittedForReviewBy;
         private boolean isDeleted = false;
         private Instant deletedAt;
         private Instant createdAt;
@@ -150,6 +216,18 @@ public class Task {
         public TaskBuilder dueDate(LocalDate dueDate) { this.dueDate = dueDate; return this; }
         public TaskBuilder createdBy(User createdBy) { this.createdBy = createdBy; return this; }
         public TaskBuilder assignees(Set<User> assignees) { this.assignees = assignees; return this; }
+        public TaskBuilder approvalStatus(String approvalStatus) { this.approvalStatus = approvalStatus; return this; }
+        public TaskBuilder completedBy(User completedBy) { this.completedBy = completedBy; return this; }
+        public TaskBuilder completedAt(Instant completedAt) { this.completedAt = completedAt; return this; }
+        public TaskBuilder approvedBy(User approvedBy) { this.approvedBy = approvedBy; return this; }
+        public TaskBuilder approvedAt(Instant approvedAt) { this.approvedAt = approvedAt; return this; }
+        public TaskBuilder rejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; return this; }
+        public TaskBuilder reviewUrl(String reviewUrl) { this.reviewUrl = reviewUrl; return this; }
+        public TaskBuilder reviewDocumentName(String reviewDocumentName) { this.reviewDocumentName = reviewDocumentName; return this; }
+        public TaskBuilder reviewDocumentPath(String reviewDocumentPath) { this.reviewDocumentPath = reviewDocumentPath; return this; }
+        public TaskBuilder reviewNotes(String reviewNotes) { this.reviewNotes = reviewNotes; return this; }
+        public TaskBuilder submittedForReviewAt(Instant submittedForReviewAt) { this.submittedForReviewAt = submittedForReviewAt; return this; }
+        public TaskBuilder submittedForReviewBy(User submittedForReviewBy) { this.submittedForReviewBy = submittedForReviewBy; return this; }
         public TaskBuilder isDeleted(boolean isDeleted) { this.isDeleted = isDeleted; return this; }
         public TaskBuilder deletedAt(Instant deletedAt) { this.deletedAt = deletedAt; return this; }
         public TaskBuilder createdAt(Instant createdAt) { this.createdAt = createdAt; return this; }
@@ -158,6 +236,8 @@ public class Task {
         public Task build() {
             return new Task(taskId, project, milestone, taskCode, title, description, status, priority,
                     estimatedHours, loggedHours, startDate, dueDate, createdBy, assignees,
+                    approvalStatus, completedBy, completedAt, approvedBy, approvedAt, rejectionReason,
+                    reviewUrl, reviewDocumentName, reviewDocumentPath, reviewNotes, submittedForReviewAt, submittedForReviewBy,
                     isDeleted, deletedAt, createdAt, updatedAt);
         }
     }
@@ -190,6 +270,30 @@ public class Task {
     public void setCreatedBy(User createdBy) { this.createdBy = createdBy; }
     public Set<User> getAssignees() { return assignees; }
     public void setAssignees(Set<User> assignees) { this.assignees = assignees; }
+    public String getApprovalStatus() { return approvalStatus; }
+    public void setApprovalStatus(String approvalStatus) { this.approvalStatus = approvalStatus; }
+    public User getCompletedBy() { return completedBy; }
+    public void setCompletedBy(User completedBy) { this.completedBy = completedBy; }
+    public Instant getCompletedAt() { return completedAt; }
+    public void setCompletedAt(Instant completedAt) { this.completedAt = completedAt; }
+    public User getApprovedBy() { return approvedBy; }
+    public void setApprovedBy(User approvedBy) { this.approvedBy = approvedBy; }
+    public Instant getApprovedAt() { return approvedAt; }
+    public void setApprovedAt(Instant approvedAt) { this.approvedAt = approvedAt; }
+    public String getRejectionReason() { return rejectionReason; }
+    public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
+    public String getReviewUrl() { return reviewUrl; }
+    public void setReviewUrl(String reviewUrl) { this.reviewUrl = reviewUrl; }
+    public String getReviewDocumentName() { return reviewDocumentName; }
+    public void setReviewDocumentName(String reviewDocumentName) { this.reviewDocumentName = reviewDocumentName; }
+    public String getReviewDocumentPath() { return reviewDocumentPath; }
+    public void setReviewDocumentPath(String reviewDocumentPath) { this.reviewDocumentPath = reviewDocumentPath; }
+    public String getReviewNotes() { return reviewNotes; }
+    public void setReviewNotes(String reviewNotes) { this.reviewNotes = reviewNotes; }
+    public Instant getSubmittedForReviewAt() { return submittedForReviewAt; }
+    public void setSubmittedForReviewAt(Instant submittedForReviewAt) { this.submittedForReviewAt = submittedForReviewAt; }
+    public User getSubmittedForReviewBy() { return submittedForReviewBy; }
+    public void setSubmittedForReviewBy(User submittedForReviewBy) { this.submittedForReviewBy = submittedForReviewBy; }
     public boolean isDeleted() { return isDeleted; }
     public void setDeleted(boolean deleted) { isDeleted = deleted; }
     public Instant getDeletedAt() { return deletedAt; }

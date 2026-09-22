@@ -18,12 +18,17 @@ import com.taskflow.task.repository.TaskCommentRepository;
 import com.taskflow.task.repository.TaskRepository;
 import com.taskflow.user.entity.User;
 import com.taskflow.user.repository.UserRepository;
+import com.taskflow.notification.service.NotificationService;
+import com.taskflow.document.service.FileStorageService;
+import org.springframework.core.io.Resource;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,6 +42,8 @@ public class TaskService {
     private final ProjectMemberRepository projectMemberRepository;
     private final UserRepository userRepository;
     private final MilestoneRepository milestoneRepository;
+    private final NotificationService notificationService;
+    private final FileStorageService fileStorageService;
 
     public TaskService(TaskRepository taskRepository,
                        SubtaskRepository subtaskRepository,
@@ -44,7 +51,9 @@ public class TaskService {
                        ProjectRepository projectRepository,
                        ProjectMemberRepository projectMemberRepository,
                        UserRepository userRepository,
-                       MilestoneRepository milestoneRepository) {
+                       MilestoneRepository milestoneRepository,
+                       NotificationService notificationService,
+                       FileStorageService fileStorageService) {
         this.taskRepository = taskRepository;
         this.subtaskRepository = subtaskRepository;
         this.taskCommentRepository = taskCommentRepository;
@@ -52,6 +61,8 @@ public class TaskService {
         this.projectMemberRepository = projectMemberRepository;
         this.userRepository = userRepository;
         this.milestoneRepository = milestoneRepository;
+        this.notificationService = notificationService;
+        this.fileStorageService = fileStorageService;
     }
 
     @Transactional
@@ -110,6 +121,21 @@ public class TaskService {
                 .build();
 
         Task saved = taskRepository.save(task);
+
+        // Optionally create initial subtasks if provided by manager
+        if (request.getSubtasks() != null && !request.getSubtasks().isEmpty()) {
+            for (String subtaskTitle : request.getSubtasks()) {
+                if (subtaskTitle != null && !subtaskTitle.trim().isEmpty()) {
+                    Subtask subtask = Subtask.builder()
+                            .task(saved)
+                            .title(subtaskTitle.trim())
+                            .isCompleted(false)
+                            .build();
+                    subtaskRepository.save(subtask);
+                }
+            }
+        }
+
         recalculateProjectProgress(project);
         return mapToResponse(saved);
     }
@@ -244,9 +270,141 @@ public class TaskService {
         UserPrincipal currentUser = getCurrentUserPrincipal();
         verifyTaskEditAccess(task, currentUser);
 
-        task.setStatus(newStatus.toUpperCase().trim());
+        String normalizedStatus = newStatus.toUpperCase().trim();
+        task.setStatus(normalizedStatus);
+
+        User user = userRepository.findById(currentUser.getId()).orElse(null);
+
+        if ("IN_REVIEW".equals(normalizedStatus)) {
+            task.setApprovalStatus("PENDING_APPROVAL");
+            task.setCompletedBy(user);
+            task.setCompletedAt(Instant.now());
+            task.setRejectionReason(null);
+
+            // Notify Project Manager
+            User pm = task.getProject().getProjectManager();
+            if (pm != null) {
+                String memberName = user != null ? (user.getFirstName() + " " + user.getLastName()) : "Team Member";
+                notificationService.createNotification(
+                        pm,
+                        user,
+                        "Task In Review - Pending Approval",
+                        memberName + " moved task '" + task.getTitle() + "' in " + task.getProject().getProjectName() + " to In Review. Please review deliverables and approve.",
+                        "TASK_APPROVAL",
+                        "/manager/projects/" + task.getProject().getProjectId() + "?tab=kanban"
+                );
+            }
+        } else if ("COMPLETED".equals(normalizedStatus)) {
+            if (hasManagementAccess(task.getProject(), currentUser)) {
+                // Manager/Admin marked completed directly
+                task.setApprovalStatus("APPROVED");
+                task.setApprovedBy(user);
+                task.setApprovedAt(Instant.now());
+                task.setRejectionReason(null);
+            } else {
+                // Team member cannot mark directly completed without manager approval
+                throw new BadRequestException("Team members cannot directly mark tasks as Completed. Please submit deliverables to In Review for Manager approval.");
+            }
+        } else {
+            // When transitioning back to another status from IN_REVIEW / PENDING_APPROVAL
+            if ("PENDING_APPROVAL".equals(task.getApprovalStatus())) {
+                task.setApprovalStatus("NONE");
+            }
+        }
+
         Task updated = taskRepository.save(task);
         recalculateProjectProgress(task.getProject());
+        return mapToResponse(updated);
+    }
+
+    @Transactional
+    public TaskDto.TaskResponse approveTask(Long taskId) {
+        Task task = taskRepository.findById(taskId)
+                .filter(t -> !t.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
+
+        UserPrincipal currentUser = getCurrentUserPrincipal();
+        if (!hasManagementAccess(task.getProject(), currentUser)) {
+            throw new AccessDeniedException("Only an Administrator or the assigned Project Manager can approve tasks");
+        }
+
+        User approver = userRepository.findById(currentUser.getId()).orElse(null);
+
+        task.setStatus("COMPLETED");
+        task.setApprovalStatus("APPROVED");
+        task.setApprovedBy(approver);
+        task.setApprovedAt(Instant.now());
+        task.setRejectionReason(null);
+
+        Task updated = taskRepository.save(task);
+        recalculateProjectProgress(task.getProject());
+
+        // Notify member(s)
+        String approverName = approver != null ? (approver.getFirstName() + " " + approver.getLastName()) : "Project Manager";
+        Set<User> recipients = new HashSet<>(task.getAssignees());
+        if (task.getCompletedBy() != null) recipients.add(task.getCompletedBy());
+
+        for (User recipient : recipients) {
+            notificationService.createNotification(
+                    recipient,
+                    approver,
+                    "Task Approved!",
+                    "Your task '" + task.getTitle() + "' has been approved by " + approverName + ".",
+                    "TASK_APPROVED",
+                    "/member/tasks"
+            );
+        }
+
+        return mapToResponse(updated);
+    }
+
+    @Transactional
+    public TaskDto.TaskResponse rejectTask(Long taskId, String reason) {
+        Task task = taskRepository.findById(taskId)
+                .filter(t -> !t.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
+
+        UserPrincipal currentUser = getCurrentUserPrincipal();
+        if (!hasManagementAccess(task.getProject(), currentUser)) {
+            throw new AccessDeniedException("Only an Administrator or the assigned Project Manager can reject tasks");
+        }
+
+        User manager = userRepository.findById(currentUser.getId()).orElse(null);
+
+        // Move task back to IN_PROGRESS so the member can address feedback
+        task.setStatus("IN_PROGRESS");
+        task.setApprovalStatus("REJECTED");
+        task.setRejectionReason(reason != null ? reason.trim() : "Task changes requested");
+
+        // Automatically post manager feedback as a discussion comment
+        if (manager != null && reason != null && !reason.isBlank()) {
+            TaskComment comment = TaskComment.builder()
+                    .task(task)
+                    .user(manager)
+                    .content("[Manager Review Feedback] " + reason.trim())
+                    .build();
+            taskCommentRepository.save(comment);
+        }
+
+        Task updated = taskRepository.save(task);
+        recalculateProjectProgress(task.getProject());
+
+        // Notify member(s)
+        String managerName = manager != null ? (manager.getFirstName() + " " + manager.getLastName()) : "Project Manager";
+        Set<User> recipients = new HashSet<>(task.getAssignees());
+        if (task.getCompletedBy() != null) recipients.add(task.getCompletedBy());
+
+        for (User recipient : recipients) {
+            notificationService.createNotification(
+                    recipient,
+                    manager,
+                    "Task Changes Requested",
+                    managerName + " requested changes on task '" + task.getTitle() + "': " + reason,
+                    "TASK_REJECTED",
+                    "/member/tasks"
+            );
+        }
+
         return mapToResponse(updated);
     }
 
@@ -271,15 +429,19 @@ public class TaskService {
 
     @Transactional
     public TaskDto.SubtaskResponse toggleSubtask(Long taskId, Long subtaskId) {
+        Task task = taskRepository.findById(taskId)
+                .filter(t -> !t.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
+
+        UserPrincipal currentUser = getCurrentUserPrincipal();
+        verifyTaskEditAccess(task, currentUser);
+
         Subtask subtask = subtaskRepository.findById(subtaskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Subtask not found with id: " + subtaskId));
 
         if (!subtask.getTask().getTaskId().equals(taskId)) {
             throw new BadRequestException("Subtask does not belong to the specified task");
         }
-
-        UserPrincipal currentUser = getCurrentUserPrincipal();
-        verifyTaskEditAccess(subtask.getTask(), currentUser);
 
         subtask.setCompleted(!subtask.isCompleted());
         Subtask saved = subtaskRepository.save(subtask);
@@ -288,15 +450,19 @@ public class TaskService {
 
     @Transactional
     public void deleteSubtask(Long taskId, Long subtaskId) {
+        Task task = taskRepository.findById(taskId)
+                .filter(t -> !t.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
+
+        UserPrincipal currentUser = getCurrentUserPrincipal();
+        verifyTaskEditAccess(task, currentUser);
+
         Subtask subtask = subtaskRepository.findById(subtaskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Subtask not found with id: " + subtaskId));
 
         if (!subtask.getTask().getTaskId().equals(taskId)) {
             throw new BadRequestException("Subtask does not belong to the specified task");
         }
-
-        UserPrincipal currentUser = getCurrentUserPrincipal();
-        verifyTaskEditAccess(subtask.getTask(), currentUser);
 
         subtaskRepository.delete(subtask);
     }
@@ -378,6 +544,11 @@ public class TaskService {
                 .anyMatch(a -> a.getUserId().equals(currentUser.getId()));
         if (isAssignee) return;
 
+        // Active project member can also edit status/checklists on tasks in this project
+        boolean isProjectMember = projectMemberRepository.existsByProject_ProjectIdAndUser_UserIdAndStatus(
+                task.getProject().getProjectId(), currentUser.getId(), "ACTIVE");
+        if (isProjectMember) return;
+
         throw new AccessDeniedException("You do not have permission to modify this task");
     }
 
@@ -453,6 +624,29 @@ public class TaskService {
             response.setMilestoneId(task.getMilestone().getMilestoneId());
             response.setMilestoneTitle(task.getMilestone().getTitle());
         }
+
+        response.setApprovalStatus(task.getApprovalStatus() != null ? task.getApprovalStatus() : "NONE");
+        if (task.getCompletedBy() != null) {
+            response.setCompletedById(task.getCompletedBy().getUserId());
+            response.setCompletedByName(task.getCompletedBy().getFirstName() + " " + task.getCompletedBy().getLastName());
+        }
+        response.setCompletedAt(task.getCompletedAt());
+        if (task.getApprovedBy() != null) {
+            response.setApprovedById(task.getApprovedBy().getUserId());
+            response.setApprovedByName(task.getApprovedBy().getFirstName() + " " + task.getApprovedBy().getLastName());
+        }
+        response.setApprovedAt(task.getApprovedAt());
+        response.setRejectionReason(task.getRejectionReason());
+
+        response.setReviewUrl(task.getReviewUrl());
+        response.setReviewDocumentName(task.getReviewDocumentName());
+        response.setReviewNotes(task.getReviewNotes());
+        response.setSubmittedForReviewAt(task.getSubmittedForReviewAt());
+        if (task.getSubmittedForReviewBy() != null) {
+            response.setSubmittedForReviewById(task.getSubmittedForReviewBy().getUserId());
+            response.setSubmittedForReviewByName(task.getSubmittedForReviewBy().getFirstName() + " " + task.getSubmittedForReviewBy().getLastName());
+        }
+
         return response;
     }
 
@@ -477,5 +671,119 @@ public class TaskService {
         dest.setAssignees(src.getAssignees());
         dest.setCreatedAt(src.getCreatedAt());
         dest.setUpdatedAt(src.getUpdatedAt());
+
+        dest.setApprovalStatus(src.getApprovalStatus());
+        dest.setCompletedById(src.getCompletedById());
+        dest.setCompletedByName(src.getCompletedByName());
+        dest.setCompletedAt(src.getCompletedAt());
+        dest.setApprovedById(src.getApprovedById());
+        dest.setApprovedByName(src.getApprovedByName());
+        dest.setApprovedAt(src.getApprovedAt());
+        dest.setRejectionReason(src.getRejectionReason());
+
+        dest.setReviewUrl(src.getReviewUrl());
+        dest.setReviewDocumentName(src.getReviewDocumentName());
+        dest.setReviewNotes(src.getReviewNotes());
+        dest.setSubmittedForReviewAt(src.getSubmittedForReviewAt());
+        dest.setSubmittedForReviewById(src.getSubmittedForReviewById());
+        dest.setSubmittedForReviewByName(src.getSubmittedForReviewByName());
+    }
+
+    @Transactional
+    public TaskDto.TaskResponse submitTaskForReview(Long taskId, MultipartFile file, String url, String notes) {
+        Task task = taskRepository.findById(taskId)
+                .filter(t -> !t.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
+
+        UserPrincipal currentUser = getCurrentUserPrincipal();
+        verifyTaskEditAccess(task, currentUser);
+
+        User submitter = userRepository.findById(currentUser.getId()).orElse(null);
+
+        // Store file if present
+        if (file != null && !file.isEmpty()) {
+            FileStorageService.FileUploadResult result = fileStorageService.storeFile(task.getProject().getProjectId(), file);
+            task.setReviewDocumentName(result.getOriginalFilename());
+            task.setReviewDocumentPath(result.getRelativePath());
+        }
+
+        if (url != null && !url.isBlank()) {
+            task.setReviewUrl(url.trim());
+        }
+
+        if (notes != null && !notes.isBlank()) {
+            task.setReviewNotes(notes.trim());
+        }
+
+        task.setStatus("IN_REVIEW");
+        task.setApprovalStatus("PENDING_APPROVAL");
+        task.setSubmittedForReviewBy(submitter);
+        task.setSubmittedForReviewAt(Instant.now());
+        task.setCompletedBy(submitter);
+        task.setCompletedAt(Instant.now());
+        task.setRejectionReason(null);
+
+        // Notify Project Manager that task deliverables are submitted for review and approval
+        User pm = task.getProject().getProjectManager();
+        if (pm != null) {
+            String submitterName = submitter != null ? (submitter.getFirstName() + " " + submitter.getLastName()) : "Team Member";
+            notificationService.createNotification(
+                    pm,
+                    submitter,
+                    "Task In Review - Pending Approval",
+                    submitterName + " submitted deliverables for task '" + task.getTitle() + "' in " + task.getProject().getProjectName() + ". Please review deliverables and approve.",
+                    "TASK_APPROVAL",
+                    "/manager/projects/" + task.getProject().getProjectId() + "?tab=kanban"
+            );
+        }
+
+        Task updated = taskRepository.save(task);
+        recalculateProjectProgress(task.getProject());
+        return mapToResponse(updated);
+    }
+
+    @Transactional(readOnly = true)
+    public TaskDocumentDownload loadReviewDocument(Long taskId) {
+        Task task = taskRepository.findById(taskId)
+                .filter(t -> !t.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
+
+        UserPrincipal currentUser = getCurrentUserPrincipal();
+        verifyProjectViewAccess(task.getProject(), currentUser);
+
+        if (task.getReviewDocumentPath() == null || task.getReviewDocumentPath().isBlank()) {
+            throw new ResourceNotFoundException("No review document attached to task: " + taskId);
+        }
+
+        Resource resource = fileStorageService.loadFileAsResource(task.getReviewDocumentPath());
+        String fileName = task.getReviewDocumentName() != null ? task.getReviewDocumentName() : "deliverable";
+
+        String mimeType = "application/octet-stream";
+        String lower = fileName.toLowerCase();
+        if (lower.endsWith(".pdf")) mimeType = "application/pdf";
+        else if (lower.endsWith(".png")) mimeType = "image/png";
+        else if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) mimeType = "image/jpeg";
+        else if (lower.endsWith(".zip")) mimeType = "application/zip";
+        else if (lower.endsWith(".txt")) mimeType = "text/plain";
+        else if (lower.endsWith(".doc")) mimeType = "application/msword";
+        else if (lower.endsWith(".docx")) mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
+        return new TaskDocumentDownload(resource, fileName, mimeType);
+    }
+
+    public static class TaskDocumentDownload {
+        private final Resource resource;
+        private final String fileName;
+        private final String mimeType;
+
+        public TaskDocumentDownload(Resource resource, String fileName, String mimeType) {
+            this.resource = resource;
+            this.fileName = fileName;
+            this.mimeType = mimeType;
+        }
+
+        public Resource getResource() { return resource; }
+        public String getFileName() { return fileName; }
+        public String getMimeType() { return mimeType; }
     }
 }

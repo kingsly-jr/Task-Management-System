@@ -7,8 +7,14 @@ import {
   ChevronRight,
   CheckSquare,
   Calendar,
-  AlertCircle
+  AlertCircle,
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  Paperclip,
+  Globe
 } from 'lucide-react';
+import SubmitReviewModal from '../../components/SubmitReviewModal';
 
 const COLUMNS = [
   { id: 'TODO', title: 'To Do', color: '#666666', bg: '#f5f5f5' },
@@ -22,6 +28,7 @@ const MemberKanbanPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTaskId, setActiveTaskId] = useState(null);
+  const [reviewTask, setReviewTask] = useState(null);
 
   useEffect(() => {
     fetchMyTasks();
@@ -53,6 +60,11 @@ const MemberKanbanPage = () => {
       if (nextIdx >= 0 && nextIdx < order.length) {
         targetStatus = order[nextIdx];
       }
+    }
+
+    if (targetStatus === 'IN_REVIEW') {
+      setReviewTask(task);
+      return;
     }
 
     if (targetStatus) {
@@ -162,6 +174,85 @@ const MemberKanbanPage = () => {
                         {t.projectName}
                       </div>
 
+                      {/* Approval Status Indicators */}
+                      {t.status === 'IN_REVIEW' && t.approvalStatus === 'PENDING_APPROVAL' && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          padding: '0.25rem 0.5rem',
+                          backgroundColor: '#fff9db',
+                          border: '1px solid #ffe066',
+                          borderRadius: '4px',
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          color: '#e67700',
+                          marginBottom: '0.4rem'
+                        }}>
+                          <Clock size={12} />
+                          <span>Waiting for Manager Approval</span>
+                        </div>
+                      )}
+
+                      {t.status === 'COMPLETED' && t.approvalStatus === 'APPROVED' && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          padding: '0.25rem 0.5rem',
+                          backgroundColor: '#ebfbee',
+                          border: '1px solid #b2f2bb',
+                          borderRadius: '4px',
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          color: '#2b8a3e',
+                          marginBottom: '0.4rem'
+                        }}>
+                          <CheckCircle2 size={12} />
+                          <span>Approved by Manager</span>
+                        </div>
+                      )}
+
+                      {t.approvalStatus === 'REJECTED' && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          padding: '0.25rem 0.5rem',
+                          backgroundColor: '#fff5f5',
+                          border: '1px solid #ffc9c9',
+                          borderRadius: '4px',
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          color: '#e03131',
+                          marginBottom: '0.4rem'
+                        }}>
+                          <AlertTriangle size={12} />
+                          <span>Changes Requested</span>
+                        </div>
+                      )}
+
+                      {/* Deliverables Indicator */}
+                      {(t.reviewUrl || t.reviewDocumentName) && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          padding: '0.22rem 0.45rem',
+                          backgroundColor: '#f0fdf4',
+                          border: '1px solid #bbf7d0',
+                          borderRadius: '4px',
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          color: '#15803d',
+                          marginBottom: '0.4rem'
+                        }}>
+                          <Paperclip size={12} />
+                          <span>Deliverables Attached</span>
+                          {t.reviewUrl && <Globe size={11} style={{ marginLeft: 'auto' }} />}
+                        </div>
+                      )}
+
                       <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2b2b2b', margin: '0 0 0.5rem 0', lineHeight: 1.4 }}>
                         {t.title}
                       </h4>
@@ -195,7 +286,7 @@ const MemberKanbanPage = () => {
                           </button>
                         )}
 
-                        {col.id !== 'COMPLETED' && (
+                        {col.id !== 'COMPLETED' && col.id !== 'IN_REVIEW' && (
                           <button
                             title="Advance status"
                             onClick={(e) => handleMoveStatus(e, t, 'next')}
@@ -220,6 +311,16 @@ const MemberKanbanPage = () => {
           taskId={activeTaskId}
           onClose={() => setActiveTaskId(null)}
           onTaskUpdated={fetchMyTasks}
+        />
+      )}
+
+      {/* Submit Deliverables Modal */}
+      {reviewTask && (
+        <SubmitReviewModal
+          task={reviewTask}
+          isOpen={!!reviewTask}
+          onClose={() => setReviewTask(null)}
+          onSuccess={fetchMyTasks}
         />
       )}
     </div>

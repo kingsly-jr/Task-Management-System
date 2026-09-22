@@ -6,10 +6,14 @@ import com.taskflow.task.service.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -152,5 +156,52 @@ public class TaskController {
         TaskDto.CommentResponse response = taskService.addComment(taskId, request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Comment added successfully", response));
+    }
+
+    @PostMapping("/tasks/{taskId}/approve")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
+    @Operation(summary = "Approve completed task (PM or Admin)")
+    public ResponseEntity<ApiResponse<TaskDto.TaskResponse>> approveTask(
+            @PathVariable Long taskId) {
+        TaskDto.TaskResponse response = taskService.approveTask(taskId);
+        return ResponseEntity.ok(ApiResponse.ok("Task approved successfully", response));
+    }
+
+    @PostMapping("/tasks/{taskId}/reject")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
+    @Operation(summary = "Reject completed task with feedback message (PM or Admin)")
+    public ResponseEntity<ApiResponse<TaskDto.TaskResponse>> rejectTask(
+            @PathVariable Long taskId,
+            @RequestBody Map<String, String> body) {
+        String message = body.get("message") != null ? body.get("message") : body.get("reason");
+        if (message == null || message.isBlank()) {
+            throw new com.taskflow.common.exception.BadRequestException("Feedback message is required when requesting changes");
+        }
+        TaskDto.TaskResponse response = taskService.rejectTask(taskId, message);
+        return ResponseEntity.ok(ApiResponse.ok("Task changes requested and returned to member", response));
+    }
+
+    @PostMapping(value = "/tasks/{taskId}/submit-for-review", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Submit task for review with implementation document and deliverable URL")
+    public ResponseEntity<ApiResponse<TaskDto.TaskResponse>> submitTaskForReview(
+            @PathVariable Long taskId,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "url", required = false) String url,
+            @RequestParam(value = "notes", required = false) String notes) {
+        TaskDto.TaskResponse response = taskService.submitTaskForReview(taskId, file, url, notes);
+        return ResponseEntity.ok(ApiResponse.ok("Task submitted for review successfully", response));
+    }
+
+    @GetMapping("/tasks/{taskId}/review-document")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Download implementation document attached to task review")
+    public ResponseEntity<Resource> downloadReviewDocument(
+            @PathVariable Long taskId) {
+        TaskService.TaskDocumentDownload download = taskService.loadReviewDocument(taskId);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(download.getMimeType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + download.getFileName() + "\"")
+                .body(download.getResource());
     }
 }

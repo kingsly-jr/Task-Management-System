@@ -13,7 +13,8 @@ import {
   Users,
   Building2,
   FolderKanban,
-  ArrowRight
+  ArrowRight,
+  Trash2
 } from 'lucide-react';
 
 const ManagerTasksPage = () => {
@@ -42,7 +43,9 @@ const ManagerTasksPage = () => {
     startDate: '',
     dueDate: '',
     assigneeIds: [],
+    subtasks: [],
   });
+  const [subtaskInput, setSubtaskInput] = useState('');
 
   useEffect(() => {
     fetchProjects();
@@ -131,8 +134,27 @@ const ManagerTasksPage = () => {
       startDate: today,
       dueDate: nextWeek,
       assigneeIds: [],
+      subtasks: [],
     });
+    setSubtaskInput('');
     setShowAddModal(true);
+  };
+
+  const handleAddModalSubtask = (e) => {
+    e.preventDefault();
+    if (!subtaskInput.trim()) return;
+    setFormData((prev) => ({
+      ...prev,
+      subtasks: [...prev.subtasks, subtaskInput.trim()],
+    }));
+    setSubtaskInput('');
+  };
+
+  const handleRemoveModalSubtask = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      subtasks: prev.subtasks.filter((_, i) => i !== index),
+    }));
   };
 
   const handleToggleAssignee = (userId) => {
@@ -161,6 +183,7 @@ const ManagerTasksPage = () => {
         startDate: formData.startDate || null,
         dueDate: formData.dueDate || null,
         assigneeIds: formData.assigneeIds,
+        subtasks: formData.subtasks,
       };
       await api.post(`/projects/${selectedProjectId}/tasks`, payload);
       setShowAddModal(false);
@@ -388,19 +411,36 @@ const ManagerTasksPage = () => {
                     </td>
 
                     <td style={{ padding: '0.85rem 1rem' }}>
-                      <span
-                        style={{
-                          display: 'inline-block',
-                          padding: '0.2rem 0.55rem',
-                          borderRadius: '4px',
-                          fontSize: '0.72rem',
-                          fontWeight: 700,
-                          backgroundColor: t.status === 'COMPLETED' ? '#e6fcf5' : t.status === 'IN_PROGRESS' ? '#2b2b2b' : '#f1f1f1',
-                          color: t.status === 'COMPLETED' ? '#0ca678' : t.status === 'IN_PROGRESS' ? '#ffffff' : '#666666',
-                        }}
-                      >
-                        {t.status.replace('_', ' ')}
-                      </span>
+                      {t.status === 'IN_REVIEW' && t.approvalStatus === 'PENDING_APPROVAL' ? (
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            padding: '0.2rem 0.55rem',
+                            borderRadius: '4px',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            backgroundColor: '#eff6ff',
+                            color: '#1d4ed8',
+                            border: '1px solid #bfdbfe'
+                          }}
+                        >
+                          Needs Approval
+                        </span>
+                      ) : (
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            padding: '0.2rem 0.55rem',
+                            borderRadius: '4px',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            backgroundColor: t.status === 'COMPLETED' ? '#e6fcf5' : t.status === 'IN_PROGRESS' ? '#2b2b2b' : '#f1f1f1',
+                            color: t.status === 'COMPLETED' ? '#0ca678' : t.status === 'IN_PROGRESS' ? '#ffffff' : '#666666',
+                          }}
+                        >
+                          {t.status.replace('_', ' ')}
+                        </span>
+                      )}
                     </td>
 
                     <td style={{ padding: '0.85rem 1rem', textAlign: 'right' }}>
@@ -565,6 +605,78 @@ const ManagerTasksPage = () => {
                         </label>
                       );
                     })}
+                  </div>
+                )}
+              </div>
+
+              {/* Checklist & Subtasks (Optional) */}
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#2b2b2b', marginBottom: '0.35rem' }}>
+                  Checklist & Subtasks (Optional)
+                </label>
+                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                  <input
+                    type="text"
+                    placeholder="Add a checklist item (e.g. Implement auth endpoint)..."
+                    value={subtaskInput}
+                    onChange={(e) => setSubtaskInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddModalSubtask(e);
+                      }
+                    }}
+                    style={{ flex: 1, padding: '0.5rem 0.75rem', border: '1px solid #d4d4d4', borderRadius: '6px', fontSize: '0.82rem' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddModalSubtask}
+                    disabled={!subtaskInput.trim()}
+                    style={{
+                      padding: '0.5rem 0.85rem',
+                      backgroundColor: '#2b2b2b',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '0.78rem',
+                      fontWeight: 600,
+                      cursor: subtaskInput.trim() ? 'pointer' : 'default',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.3rem'
+                    }}
+                  >
+                    <Plus size={14} /> Add
+                  </button>
+                </div>
+                {formData.subtasks.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', maxHeight: '120px', overflowY: 'auto' }}>
+                    {formData.subtasks.map((st, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '0.4rem 0.65rem',
+                          backgroundColor: '#f8f8f8',
+                          border: '1px solid #e5e5e5',
+                          borderRadius: '5px',
+                          fontSize: '0.8rem'
+                        }}
+                      >
+                        <span style={{ color: '#2b2b2b' }}>{st}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveModalSubtask(idx)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8c8c8c', padding: '0.1rem' }}
+                          onMouseEnter={(e) => (e.currentTarget.style.color = '#e03131')}
+                          onMouseLeave={(e) => (e.currentTarget.style.color = '#8c8c8c')}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
