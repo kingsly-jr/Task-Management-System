@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
 import api from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -21,8 +22,9 @@ const CHANNELS = [
 
 const ClientMessagesPage = () => {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [projects, setProjects] = useState([]);
-  const [selectedProjectId, setSelectedProjectId] = useState('');
+  const [selectedProjectId, setSelectedProjectId] = useState(searchParams.get('projectId') || '');
   const [selectedChannel, setSelectedChannel] = useState('GENERAL');
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
@@ -56,9 +58,12 @@ const ClientMessagesPage = () => {
       const res = await api.get('/projects');
       const list = res.data || [];
       setProjects(list);
-      if (list.length > 0) {
+      const paramId = searchParams.get('projectId');
+      if (paramId && list.some(p => String(p.projectId) === String(paramId))) {
+        setSelectedProjectId(paramId);
+      } else if (list.length > 0 && !selectedProjectId) {
         setSelectedProjectId(list[0].projectId);
-      } else {
+      } else if (list.length === 0) {
         setLoading(false);
       }
     } catch (err) {
@@ -117,20 +122,32 @@ const ClientMessagesPage = () => {
           </p>
         </div>
 
-        {projects.length > 1 && (
-          <select
-            value={selectedProjectId}
-            onChange={(e) => setSelectedProjectId(e.target.value)}
-            className="form-control"
-            style={{ padding: '0.5rem 0.85rem', fontSize: '0.88rem', fontWeight: 600, minWidth: '220px' }}
-          >
-            {projects.map((p) => (
-              <option key={p.projectId} value={p.projectId}>
-                {p.projectCode} — {p.projectName}
-              </option>
-            ))}
-          </select>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+          {projects.length > 1 && (
+            <select
+              value={selectedProjectId}
+              onChange={(e) => setSelectedProjectId(e.target.value)}
+              className="form-control"
+              style={{ padding: '0.5rem 0.85rem', fontSize: '0.88rem', fontWeight: 600, minWidth: '220px' }}
+            >
+              {projects.map((p) => (
+                <option key={p.projectId} value={p.projectId}>
+                  {p.projectCode} — {p.projectName}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {selectedProjectId && (
+            <Link
+              to={`/client/projects/${selectedProjectId}?tab=messages`}
+              className="btn btn-primary"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem', padding: '0.5rem 0.85rem' }}
+            >
+              <FolderKanban size={14} /> Open in Project Hub
+            </Link>
+          )}
+        </div>
       </div>
 
       {error && (

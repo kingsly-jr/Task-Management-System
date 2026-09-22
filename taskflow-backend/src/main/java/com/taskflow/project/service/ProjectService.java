@@ -315,6 +315,8 @@ public class ProjectService {
             if (remaining.compareTo(BigDecimal.ZERO) < 0) remaining = BigDecimal.ZERO;
         }
 
+        int progress = project.getProgress() != null ? project.getProgress() : 0;
+
         return new ProjectDto.ProjectResponse(
                 project.getProjectId(),
                 project.getProjectCode(),
@@ -335,7 +337,7 @@ public class ProjectService {
                 remaining,
                 project.getPriority(),
                 project.getStatus(),
-                project.getProgress(),
+                progress,
                 project.getTechnologyStack(),
                 teamCount,
                 project.getCreatedAt(),

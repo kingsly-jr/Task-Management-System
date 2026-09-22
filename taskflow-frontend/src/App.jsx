@@ -43,12 +43,10 @@ import AuditLogsPage from './pages/admin/AuditLogsPage';
 import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 import ClientDashboard from './pages/client/ClientDashboard';
 import ClientProjectsPage from './pages/client/ClientProjectsPage';
+import ClientProjectDetailsPage from './pages/client/ClientProjectDetailsPage';
 import ClientDeliverablesPage from './pages/client/ClientDeliverablesPage';
-import ClientChangeRequestsPage from './pages/client/ClientChangeRequestsPage';
 import ClientFeedbackPage from './pages/client/ClientFeedbackPage';
 import ClientInvoicesPage from './pages/client/ClientInvoicesPage';
-import ClientDocumentsPage from './pages/client/ClientDocumentsPage';
-import ClientMessagesPage from './pages/client/ClientMessagesPage';
 import ClientSettingsPage from './pages/client/ClientSettingsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
@@ -145,12 +143,13 @@ function App() {
             <Route index element={<Navigate to="/client/dashboard" replace />} />
             <Route path="dashboard" element={<ClientDashboard />} />
             <Route path="projects" element={<ClientProjectsPage />} />
+            <Route path="projects/:id" element={<ClientProjectDetailsPage />} />
             <Route path="deliverables" element={<ClientDeliverablesPage />} />
-            <Route path="change-requests" element={<ClientChangeRequestsPage />} />
+            <Route path="change-requests" element={<Navigate to="/client/projects" replace />} />
             <Route path="feedback" element={<ClientFeedbackPage />} />
             <Route path="invoices" element={<ClientInvoicesPage />} />
-            <Route path="documents" element={<ClientDocumentsPage />} />
-            <Route path="messages" element={<ClientMessagesPage />} />
+            <Route path="documents" element={<Navigate to="/client/projects" replace />} />
+            <Route path="messages" element={<Navigate to="/client/projects" replace />} />
             <Route path="settings" element={<ClientSettingsPage />} />
             <Route path="*" element={<ClientDashboard />} />
           </Route>

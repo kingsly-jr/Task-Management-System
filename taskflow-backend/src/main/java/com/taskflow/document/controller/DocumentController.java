@@ -28,7 +28,7 @@ public class DocumentController {
     }
 
     @PostMapping(value = "/projects/{projectId}/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'CLIENT')")
     @Operation(summary = "Upload new document with metadata for a project")
     public ResponseEntity<ApiResponse<DocumentDto.DocumentResponse>> uploadDocument(
             @PathVariable Long projectId,

@@ -53,8 +53,10 @@ const ClientDashboard = () => {
     }
   };
 
+  const getProjProgress = (p) => (p.progressPercentage !== undefined && p.progressPercentage !== null ? p.progressPercentage : (p.progress !== undefined && p.progress !== null ? p.progress : 0));
+
   const avgProgress = projects.length > 0
-    ? Math.round(projects.reduce((acc, p) => acc + (p.progressPercentage || 0), 0) / projects.length)
+    ? Math.round(projects.reduce((acc, p) => acc + getProjProgress(p), 0) / projects.length)
     : 0;
 
   const totalContractValue = projects.reduce((acc, p) => acc + (Number(p.budget) || 0), 0);
@@ -198,28 +200,28 @@ const ClientDashboard = () => {
                     </div>
                   </div>
 
-                  <div style={{ width: '110px' }}>
+                  <div style={{ width: '120px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', marginBottom: '0.25rem' }}>
                       <span style={{ color: '#666666' }}>Progress</span>
-                      <span style={{ fontWeight: 800, color: '#2b2b2b' }}>{p.progressPercentage}%</span>
+                      <span style={{ fontWeight: 800, color: '#2b2b2b' }}>{getProjProgress(p)}%</span>
                     </div>
                     <div style={{ height: '6px', backgroundColor: '#e5e5e5', borderRadius: '999px', overflow: 'hidden' }}>
                       <div
                         style={{
                           height: '100%',
-                          width: `${p.progressPercentage}%`,
-                          backgroundColor: p.progressPercentage === 100 ? '#0ca678' : '#2b2b2b'
+                          width: `${getProjProgress(p)}%`,
+                          backgroundColor: getProjProgress(p) === 100 ? '#0ca678' : '#2b2b2b'
                         }}
                       />
                     </div>
                   </div>
 
                   <Link
-                    to="/client/projects"
+                    to={`/client/projects/${p.projectId}`}
                     className="btn btn-secondary"
                     style={{ fontSize: '0.78rem', padding: '0.35rem 0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
                   >
-                    Roadmap <ChevronRight size={13} />
+                    Project Hub <ChevronRight size={13} />
                   </Link>
                 </div>
               </div>

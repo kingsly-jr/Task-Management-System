@@ -221,6 +221,7 @@ public class ProjectDto {
         public void setStatus(String status) { this.status = status; }
         public Integer getProgress() { return progress; }
         public void setProgress(Integer progress) { this.progress = progress; }
+        public Integer getProgressPercentage() { return progress != null ? progress : 0; }
         public String getTechnologyStack() { return technologyStack; }
         public void setTechnologyStack(String technologyStack) { this.technologyStack = technologyStack; }
         public long getTeamMembersCount() { return teamMembersCount; }

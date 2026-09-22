@@ -6,11 +6,8 @@ import {
   LayoutDashboard,
   FolderKanban,
   CheckSquare2,
-  GitPullRequest,
   Star,
   DollarSign,
-  FileText,
-  MessageSquare,
   Settings,
   LogOut,
   ShieldCheck,
@@ -37,7 +34,6 @@ const ClientLayout = () => {
       group: 'DELIVERABLES & SCOPE',
       items: [
         { name: 'Milestones & Deliverables', path: '/client/deliverables', icon: CheckSquare2 },
-        { name: 'Change Requests', path: '/client/change-requests', icon: GitPullRequest },
       ]
     },
     {
@@ -53,13 +49,6 @@ const ClientLayout = () => {
       ]
     },
     {
-      group: 'COMMUNICATION & ASSETS',
-      items: [
-        { name: 'Documents', path: '/client/documents', icon: FileText },
-        { name: 'Direct Messages', path: '/client/messages', icon: MessageSquare },
-      ]
-    },
-    {
       group: 'ORGANIZATION',
       items: [
         { name: 'Company Settings', path: '/client/settings', icon: Settings },
@@ -68,8 +57,9 @@ const ClientLayout = () => {
   ];
 
   // Derive current page title
-  const currentItem = navGroups.flatMap(g => g.items).find(i => location.pathname === i.path);
-  const currentTitle = currentItem ? currentItem.name : 'Client Portal';
+  const isProjectPath = location.pathname.startsWith('/client/projects');
+  const currentItem = navGroups.flatMap(g => g.items).find(i => location.pathname === i.path || (isProjectPath && i.path === '/client/projects'));
+  const currentTitle = location.pathname === '/client/projects' ? 'My Projects' : isProjectPath ? 'Project Workspace Hub' : (currentItem ? currentItem.name : 'Client Portal');
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#fbfbfb' }}>
@@ -151,19 +141,22 @@ const ClientLayout = () => {
                       key={item.path}
                       to={item.path}
                       onClick={() => setSidebarOpen(false)}
-                      style={({ isActive }) => ({
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.65rem',
-                        padding: '0.55rem 0.75rem',
-                        borderRadius: '6px',
-                        fontSize: '0.85rem',
-                        fontWeight: isActive ? 700 : 500,
-                        color: isActive ? '#ffffff' : '#4a4a4a',
-                        backgroundColor: isActive ? '#2b2b2b' : 'transparent',
-                        textDecoration: 'none',
-                        transition: 'all 0.15s ease',
-                      })}
+                      style={({ isActive }) => {
+                        const active = isActive || (isProjectPath && item.path === '/client/projects');
+                        return {
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.65rem',
+                          padding: '0.55rem 0.75rem',
+                          borderRadius: '6px',
+                          fontSize: '0.85rem',
+                          fontWeight: active ? 700 : 500,
+                          color: active ? '#ffffff' : '#4a4a4a',
+                          backgroundColor: active ? '#2b2b2b' : 'transparent',
+                          textDecoration: 'none',
+                          transition: 'all 0.15s ease',
+                        };
+                      }}
                     >
                       <Icon size={16} />
                       <span style={{ flex: 1 }}>{item.name}</span>

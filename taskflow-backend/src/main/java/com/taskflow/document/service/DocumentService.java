@@ -84,7 +84,7 @@ public class DocumentService {
                 .filePath(uploadResult.getRelativePath())
                 .description(request.getDescription())
                 .version(1)
-                .isClientVisible(request.isClientVisible())
+                .isClientVisible("CLIENT".equalsIgnoreCase(currentUser.getRoleCode()) || request.isClientVisible())
                 .uploadedBy(uploader)
                 .isDeleted(false)
                 .build();
@@ -277,7 +277,14 @@ public class DocumentService {
             return;
         }
 
-        throw new AccessDeniedException("Clients cannot upload internal project documents");
+        if ("CLIENT".equalsIgnoreCase(role)) {
+            if (project.getClient().getUser() == null || !project.getClient().getUser().getUserId().equals(currentUser.getId())) {
+                throw new AccessDeniedException("You do not have permission to upload documents to this project");
+            }
+            return;
+        }
+
+        throw new AccessDeniedException("You do not have permission to upload documents to this project");
     }
 
     private void verifyProjectViewAccess(Project project, UserPrincipal currentUser) {
